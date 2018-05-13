@@ -23,72 +23,62 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <sys/stat.h>
+#include "util.h"
 
-#include "mconfig.h"
+#ifndef HAVE_STRLCPY
 
-/*
- * read file contents
- */
-
-static size_t read_file_contents(const char *fpath, char **buf)
+/* size bounded string copy function */
+size_t strlcpy(char *dst, const char *src, size_t size)
 {
-	FILE *fp;
-	struct stat st;
-	size_t read_len;
+	size_t srclen;
 
-	if (stat(fpath, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size == 0) {
-		fprintf(stderr, "Could not get stat of file '%s'\n", fpath);
-		return 0;
-	}
+	/* decrease size value */
+	size--;
 
-	fp = fopen(fpath, "r");
-	if (!fp) {
-		fprintf(stderr, "Could not open file '%s' for reading\n", fpath);
-		return 0;
-	}
+	/* get source len */
+	srclen = strlen(src);
+	if (srclen > size)
+		srclen = size;
 
-	*buf = (char *) malloc(st.st_size + 1);
-	if (*buf == NULL) {
-		fprintf(stderr, "Out of memory!\n");
-		fclose(fp);
-		return 0;
-	}
+	memcpy(dst, src, srclen);
+	dst[srclen] = '\0';
 
-	read_len = fread(*buf, 1, st.st_size, fp);
-	if (read_len > 0)
-		(*buf)[read_len] = '\0';
-
-	fclose(fp);
-
-	return read_len;
+	return srclen;
 }
 
-/*
- * main function
- */
+#endif
 
-int main(int argc, char *argv[])
+#ifndef HAVE_STRLCAT
+
+/* size bounded string copy function */
+size_t strlcat(char *dst, const char *src, size_t size)
 {
-	char *hcl_options = NULL;
-	int ret;
+	size_t srclen;
+	size_t dstlen;
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: cmdline <HCL options file>\n");
-		exit(1);
-	}
+	/* set length of destination buffer */
+	dstlen = strlen(dst);
+	size -= dstlen + 1;
+	if (!size)
+		return dstlen;
 
-	/* read HCL options */
-	if (read_file_contents(argv[1], &hcl_options) <= 0)
-		exit(1);
+	/* get the length of source buffer */
+	srclen = strlen(src);
+	if (srclen > size)
+		srclen = size;
 
-	ret = mconfig_init(hcl_options);
+	memcpy(dst + dstlen, src, srclen);
+	dst[dstlen + srclen] = '\0';
 
-	free(hcl_options);
-
-	return ret;
+	return (dstlen + srclen);
 }
+
+#endif

@@ -23,72 +23,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <sys/stat.h>
-
-#include "mconfig.h"
+static char err_msg[CFG_MAX_ERR_MSG];
 
 /*
- * read file contents
+ * set error string
  */
 
-static size_t read_file_contents(const char *fpath, char **buf)
+void mconfig_set_err(const char *err)
 {
-	FILE *fp;
-	struct stat st;
-	size_t read_len;
+	if (err_msg)
+		free(err_msg);
 
-	if (stat(fpath, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size == 0) {
-		fprintf(stderr, "Could not get stat of file '%s'\n", fpath);
-		return 0;
-	}
-
-	fp = fopen(fpath, "r");
-	if (!fp) {
-		fprintf(stderr, "Could not open file '%s' for reading\n", fpath);
-		return 0;
-	}
-
-	*buf = (char *) malloc(st.st_size + 1);
-	if (*buf == NULL) {
-		fprintf(stderr, "Out of memory!\n");
-		fclose(fp);
-		return 0;
-	}
-
-	read_len = fread(*buf, 1, st.st_size, fp);
-	if (read_len > 0)
-		(*buf)[read_len] = '\0';
-
-	fclose(fp);
-
-	return read_len;
+	strlcpy(err_msg, err, sizeof(err_msg));
 }
 
 /*
- * main function
+ * get error string
  */
 
-int main(int argc, char *argv[])
+const char *mconfig_get_err(void)
 {
-	char *hcl_options = NULL;
-	int ret;
-
-	if (argc != 2) {
-		fprintf(stderr, "Usage: cmdline <HCL options file>\n");
-		exit(1);
-	}
-
-	/* read HCL options */
-	if (read_file_contents(argv[1], &hcl_options) <= 0)
-		exit(1);
-
-	ret = mconfig_init(hcl_options);
-
-	free(hcl_options);
-
-	return ret;
+	return err_msg;
 }
