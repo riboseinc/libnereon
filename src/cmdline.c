@@ -32,10 +32,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/types.h>
+#include <errno.h>
 #include <limits.h>
 #include <ucl.h>
 
 #include "common.h"
+#include "err.h"
 #include "util.h"
 
 #include "hcl.h"
@@ -44,19 +46,54 @@
  * show helper message
  */
 
-static void show_helper(struct mconfig_hcl_options *hcl_opts, int hcl_opts_count)
+static void show_helper(const char *prog_name, struct mconfig_hcl_options *hcl_opts, int hcl_opts_count)
 {
-	int max_sw_len = 0, max_desc_len;
+	int max_sw_len = 0, max_desc_len = 0;
+	int i;
 
 	for (i = 0; i < hcl_opts_count; i++) {
 		struct mconfig_hcl_options *opt = &hcl_opts[i];
 
 		max_sw_len = max_sw_len > strlen(opt->sw_long) ? max_sw_len : strlen(opt->sw_long);
-		max_desc_len = max_desc_len > strlen(opt->desc_long) ? max_desc_len : strlen(opt->desc_long);
+		max_desc_len = max_desc_len > strlen(opt->desc_short) ? max_desc_len : strlen(opt->desc_short);
 	}
 
 	max_sw_len += 2;
 	max_desc_len += 2;
+
+	fprintf(stdout, "Usage: %s [options]\n", prog_name);
+	for (i = 0; i < hcl_opts_count; i++) {
+		struct mconfig_hcl_options *opt = &hcl_opts[i];
+
+		char *padding_sw, *padding_desc;
+
+		padding_sw = (char *)calloc(' ', max_sw_len - strlen(opt->sw_long) + 1);
+		if (!padding_sw)
+			return;
+
+		padding_desc = (char *)calloc(' ', max_desc_len - strlen(opt->desc_short));
+		if (!padding_desc) {
+			free(padding_sw);
+			return;
+		}
+
+		if (opt->cfg_type != CFG_TYPE_BOOL) {
+			fprintf(stdout, "  -%s|--%s%s<%s>%s: %s\n",
+				opt->sw_short,
+				opt->sw_long, padding_sw,
+				opt->desc_short, padding_desc,
+				opt->desc_long);
+		} else {
+			fprintf(stdout, "  -%s|--%s%s%s  : %s\n",
+				opt->sw_short,
+				opt->sw_long, padding_sw,
+				padding_desc,
+				opt->desc_long);
+		}
+
+		free(padding_sw);
+		free(padding_desc);
+	}
 }
 
 /*
@@ -65,6 +102,24 @@ static void show_helper(struct mconfig_hcl_options *hcl_opts, int hcl_opts_count
 
 int set_opt_val(const char *arg, struct mconfig_hcl_options *opt)
 {
+	if (opt->cfg_type == CFG_TYPE_INT) {
+		int cfg_i;
+
+		cfg_i = (int)strtol(arg, NULL, 10);
+		if (errno == EINVAL || errno == ERANGE) {
+			return -1;
+		}
+		opt->cfg_data.i = cfg_i;
+	} else if (opt->cfg_type == CFG_TYPE_STRING || opt->cfg_type == CFG_TYPE_IPPORT) {
+		char *cfg_str;
+
+		cfg_str = strdup(arg);
+		if (!cfg_str) {
+			return -1;
+		}
+		opt->cfg_data.str = cfg_str;
+	}
+
 	return 0;
 }
 
@@ -79,10 +134,10 @@ int mconfig_parse_cmdline(struct mconfig_hcl_options *hcl_opts, int hcl_opts_cou
 	char sw_short[2];
 	char sw_long[CFG_MAX_LONG_SWITCH];
 
-	if (args_count == 0)
+	if (args_count == 1)
 		return 0;
 
-	for (i = 0; i < args_count; i++) {
+	for (i = 1; i < args_count; i++) {
 		int opt_idx;
 
 		sw_short[0] = sw_long[0] = '\0';
@@ -104,14 +159,13 @@ int mconfig_parse_cmdline(struct mconfig_hcl_options *hcl_opts, int hcl_opts_cou
 				return -1;
 			}
 
-			if (opt->type == CFG_TYPE_BOOL) {
-				bool enabled = true;
+			if (opt->cfg_type == CFG_TYPE_BOOL) {
 				if (opt->helper) {
-					show_helper(hcl_opts, hcl_opts_count);
+					show_helper(args[0], hcl_opts, hcl_opts_count);
 					return 0;
 				}
 
-				opt->data = (void *)&enabled;
+				opt->cfg_data.b = true;
 				break;
 			}
 
@@ -121,8 +175,10 @@ int mconfig_parse_cmdline(struct mconfig_hcl_options *hcl_opts, int hcl_opts_cou
 				return -1;
 			}
 
-			if (!set_opt_val(args[i], opt))
+			if (set_opt_val(args[i], opt) != 0) {
+				mconfig_set_err("Invalid argument for switch '%s'", args[i - 1]);
 				return -1;
+			}
 		}
 	}
 

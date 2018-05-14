@@ -31,6 +31,8 @@
 
 #include "mconfig.h"
 
+#define TEST_CMDLINE_HCL                 "tests/cmdline.hcl"
+
 /*
  * read file contents
  */
@@ -77,17 +79,11 @@ int main(int argc, char *argv[])
 	char *hcl_options = NULL;
 	int ret;
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: cmdline <HCL options file>\n");
-		exit(1);
-	}
-
 	/* read HCL options */
-	if (read_file_contents(argv[1], &hcl_options) <= 0)
+	if (read_file_contents(TEST_CMDLINE_HCL, &hcl_options) <= 0)
 		exit(1);
 
-	ret = mconfig_init(hcl_options);
-
+	ret = mconfig_init(hcl_options, argc, argv);
 	free(hcl_options);
 
 	return ret;

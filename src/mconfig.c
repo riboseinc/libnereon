@@ -35,22 +35,28 @@
 #include "common.h"
 
 #include "hcl.h"
+#include "cmdline.h"
 #include "mconfig.h"
 
 /*
  * intiialize multi-config
  */
 
-int mconfig_init(const char *hcl_options)
+int mconfig_init(const char *hcl_options, int argc, char **argv)
 {
 	struct mconfig_hcl_options *mcfg_opts = NULL;
 	int mcfg_opts_count = 0;
 
-	int ret;
+	/* parse HCL options */
+	if (mconfig_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count) != 0) {
+		return -1;
+	}
 
-	fprintf(stderr, "mconfig_init() called.\n");
+	if (mconfig_parse_cmdline(mcfg_opts, mcfg_opts_count, argc, argv) != 0) {
+		free(mcfg_opts);
+		return -1;
+	}
+	free(mcfg_opts);
 
-	ret = mconfig_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count);
-
-	return ret;
+	return 0;
 }

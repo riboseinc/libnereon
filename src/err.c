@@ -30,6 +30,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
+
+#include "common.h"
+#include "err.h"
 
 static char err_msg[CFG_MAX_ERR_MSG];
 
@@ -37,12 +41,28 @@ static char err_msg[CFG_MAX_ERR_MSG];
  * set error string
  */
 
-void mconfig_set_err(const char *err)
+void mconfig_set_err(const char *err_fmt, ...)
 {
-	if (err_msg)
-		free(err_msg);
+	va_list va_args;
 
-	strlcpy(err_msg, err, sizeof(err_msg));
+	char *msg;
+	size_t msg_size;
+
+	va_start(va_args, err_fmt);
+	msg_size = vsnprintf(NULL, 0, err_fmt, va_args);
+	va_end(va_args);
+
+	msg = (char *) malloc(msg_size + 1);
+	if (!msg)
+		return;
+
+	va_start(va_args, err_fmt);
+	vsnprintf(msg, msg_size + 1, err_fmt, va_args);
+	va_end(va_args);
+
+	strlcpy(err_msg, msg, sizeof(err_msg));
+
+	free(msg);
 }
 
 /*

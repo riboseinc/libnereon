@@ -34,6 +34,7 @@
 #include <ucl.h>
 
 #include "common.h"
+#include "err.h"
 #include "util.h"
 
 #include "hcl.h"
@@ -56,8 +57,6 @@ static enum CFG_TYPE parse_opt_type(const char *type_str)
 		cfg_type = CFG_TYPE_IPPORT;
 	else if (strcmp(type_str, "bool") == 0)
 		cfg_type = CFG_TYPE_BOOL;
-	else
-		fprintf(stderr, "Invalide type '%s'\n", type_str);
 
 	return cfg_type;
 }
@@ -114,23 +113,21 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 {
 	const ucl_object_t *sub_obj;
 
-	fprintf(stdout, "Parsing cmdline '%s' options\n", obj->key);
-
 	/* set key */
 	strlcpy(opt->cfg_name, obj->key, sizeof(opt->cfg_name));
-
-	fprintf(stderr, "config name is '%s'\n", opt->cfg_name);
 
 	/* get type */
 	sub_obj = ucl_object_lookup(obj, "type");
 	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		fprintf(stderr, "Could not found 'type' key\n");
+		mconfig_set_err("Could not found 'type' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	opt->cfg_type = parse_opt_type(ucl_object_tostring(sub_obj));
-	if (opt->cfg_type == CFG_TYPE_UNKNOWN)
+	if (opt->cfg_type == CFG_TYPE_UNKNOWN) {
+		mconfig_set_err("Invalid configuration type '%s' for config '%s'", ucl_object_tostring(sub_obj), opt->cfg_name);
 		return -1;
+	}
 
 	if (opt->cfg_type == CFG_TYPE_BOOL) {
 		sub_obj = ucl_object_lookup(obj, "helper");
@@ -139,49 +136,41 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 		}
 	}
 
-	fprintf(stderr, "config type is '%d'\n", opt->cfg_type);
-
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "switch");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		fprintf(stderr, "Could not found 'switch' key\n");
+		mconfig_set_err("Could not found 'switch' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
-	if (parse_switch_options(sub_obj, opt) != 0)
+	if (parse_switch_options(sub_obj, opt) != 0) {
+		mconfig_set_err("Invalid switch options for config '%s'", opt->cfg_name);
 		return -1;
-
-	fprintf(stderr, "swith is 'short:%s, long:%s'\n", opt->sw_short, opt->sw_long);
+	}
 
 	/* get description */
 	sub_obj = ucl_object_lookup(obj, "description");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		fprintf(stderr, "Could not found 'description' key\n");
+		mconfig_set_err("Could not found 'description' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
-	if (parse_desc_options(sub_obj, opt) != 0)
+	if (parse_desc_options(sub_obj, opt) != 0) {
+		mconfig_set_err("Invalid description options for config '%s'", opt->cfg_name);
 		return -1;
-
-	fprintf(stderr, "description is 'short:%s, long:%s'\n", opt->desc_short, opt->desc_long);
+	}
 
 	/* get env */
 	sub_obj = ucl_object_lookup(obj, "env");
-	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		fprintf(stderr, "Could not found 'env' key\n");
-	} else
+	if (sub_obj && sub_obj->type == UCL_STRING) {
 		strlcpy(opt->cfg_env, ucl_object_tostring(sub_obj), sizeof(opt->cfg_env));
-
-	fprintf(stderr, "config_env is '%s'\n", opt->cfg_env);
+	}
 
 	/* get config */
 	sub_obj = ucl_object_lookup(obj, "config");
-	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		fprintf(stderr, "Could not found 'config' key\n");
-	} else
+	if (sub_obj || sub_obj->type == UCL_STRING) {
 		strlcpy(opt->cfg_key, ucl_object_tostring(sub_obj), sizeof(opt->cfg_key));
-
-	fprintf(stderr, "config_key is '%s'\n", opt->cfg_key);
+	}
 
 	return 0;
 }
@@ -197,31 +186,25 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mconfig_hcl_opt
 
 	int ret = 0;
 
-	fprintf(stderr, "parse_cmdline_options() has called\n");
-
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false)) && ret == 0) {
 		const ucl_object_t *cur;
-
-		fprintf(stderr, "the key is %s\n", obj->key);
 
 		it_obj = NULL;
 		while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
 			struct mconfig_hcl_options opt;
 
-			fprintf(stderr, "the key is '%s'\n", cur->key);
-
 			memset(&opt, 0, sizeof(struct mconfig_hcl_options));
 			if (parse_options(cur, &opt) == 0) {
 				*hcl_opts = (struct mconfig_hcl_options *)realloc(*hcl_opts,
 							(*hcl_opts_count + 1) * sizeof(struct mconfig_hcl_options));
-				if (*hcl_opts == NULL)
+				if (*hcl_opts == NULL) {
+					mconfig_set_err("Out of memory!");
 					ret = -1;
+				}
 				else {
 					memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mconfig_hcl_options));
 					(*hcl_opts_count)++;
-
-					fprintf(stderr, "Added new option '%s'\n", opt.cfg_name);
 				}
 			} else
 				ret = -1;
@@ -243,8 +226,6 @@ static int parse_hcl_options(const ucl_object_t *obj, struct mconfig_hcl_options
 	struct mconfig_hcl_options *opt;
 
 	int ret = 0;
-
-	fprintf(stderr, "parse_hcl_options() called\n");
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false)) && ret == 0) {
@@ -271,20 +252,16 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 
 	int ret;
 
-	fprintf(stderr, "mconfig_parse_hcl_options() called.\n");
-
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
 	if (!parser) {
-		fprintf(stderr, "Could not create UCL parser\n");
+		mconfig_set_err("Could not create UCL parser");
 		return -1;
 	}
 	ucl_parser_add_chunk(parser, (const unsigned char*)hcl, strlen(hcl));
 
-	fprintf(stderr, "ucl_parser_new() called\n");
-
 	if (ucl_parser_get_error(parser) != NULL) {
-		fprintf(stderr, "Failed to parse HCL options\n");
+		mconfig_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;
@@ -292,7 +269,7 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 
 	obj = ucl_parser_get_object(parser);
 	if (!obj) {
-		fprintf(stderr, "Could not get UCL object from HCL string\n");
+		mconfig_set_err("Failed to get HCL object(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;

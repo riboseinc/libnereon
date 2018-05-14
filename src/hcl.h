@@ -26,7 +26,11 @@ struct mconfig_hcl_options {
 	char cfg_env[CFG_MAX_ENV_NAME];
 	char cfg_key[CFG_MAX_KEY_NAME];
 
-	void *data;
+	union {
+		int i;
+		char *str;
+		bool b;
+	} cfg_data;
 };
 
 /* parse HCL options */
