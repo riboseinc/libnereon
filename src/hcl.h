@@ -1,19 +1,26 @@
 #ifndef __MCONFIG_HCL_H__
 #define __MCONFIG_HCL_H__
 
-/* configuration types */
-enum CFG_TYPE {
-	CFG_TYPE_INT = 0,
-	CFG_TYPE_BOOL,
-	CFG_TYPE_STRING,
-	CFG_TYPE_ARRAY,
-	CFG_TYPE_IPPORT,
-	CFG_TYPE_UNKNOWN
+/*
+ * multiconfig configuration types
+ */
+
+enum MCFG_TYPE {
+	MCFG_TYPE_INT = 0,
+	MCFG_TYPE_BOOL,
+	MCFG_TYPE_STRING,
+	MCFG_TYPE_ARRAY,
+	MCFG_TYPE_IPPORT,
+	MCFG_TYPE_UNKNOWN
 };
 
-struct mconfig_hcl_options {
+/*
+ * multiconfig HCL options
+ */
+
+struct mcfg_hcl_options {
 	char cfg_name[CFG_MAX_NAME];
-	enum CFG_TYPE cfg_type;
+	enum MCFG_TYPE cfg_type;
 
 	bool helper;
 
@@ -33,7 +40,16 @@ struct mconfig_hcl_options {
 	} cfg_data;
 };
 
-/* parse HCL options */
-int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_opts, int *hcl_opts_count);
+/*
+ * parse multiconfig HCL options
+ */
+
+int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count);
+
+/*
+ * free HCL options
+ */
+
+void mcfg_free_hcl_options(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count);
 
 #endif /* __MCONFIG_HCL_H__ */

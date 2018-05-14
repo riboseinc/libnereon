@@ -2,11 +2,42 @@
 #define __MCONFIG_H__
 
 /*
- * multiconfig export functions
+ * multiconfig context structure
  */
 
-int mconfig_init(const char *hcl_options, int argc, char **argv);
+typedef struct mconfig_ctx {
+	void *hcl_opts;
+	int hcl_opts_count;
+} mconfig_ctx_t;
 
-const char *mconfig_get_err(void);
+/*
+ * Initialize multiconfig context object
+ */
+
+int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options);
+
+/*
+ * Finalize multiconfig context object
+ */
+
+void mconfig_ctx_finalize(mconfig_ctx_t *mctx);
+
+/*
+ * Parse command line arguments
+ */
+
+int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv);
+
+/*
+ * Print multiconfig command line usage
+ */
+
+void mconfig_print_usage(mconfig_ctx_t *mctx);
+
+/*
+ * Get the last error message
+ */
+
+const char *mconfig_get_errmsg(void);
 
 #endif /* __MCONFIG_H__ */
