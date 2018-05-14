@@ -113,6 +113,8 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 {
 	const ucl_object_t *sub_obj;
 
+	DEBUG_PRINT("Parsing config '%s'\n", obj->key);
+
 	/* set key */
 	strlcpy(opt->cfg_name, obj->key, sizeof(opt->cfg_name));
 
@@ -251,6 +253,8 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 	ucl_object_t *obj = NULL;
 
 	int ret;
+
+	DEBUG_PRINT("Parsing HCL options\n");
 
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);

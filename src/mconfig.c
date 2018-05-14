@@ -36,6 +36,7 @@
 
 #include "hcl.h"
 #include "cmdline.h"
+#include "err.h"
 #include "mconfig.h"
 
 /*
@@ -47,10 +48,15 @@ int mconfig_init(const char *hcl_options, int argc, char **argv)
 	struct mconfig_hcl_options *mcfg_opts = NULL;
 	int mcfg_opts_count = 0;
 
+	DEBUG_PRINT("Initializing multiconfig\n");
+
 	/* parse HCL options */
 	if (mconfig_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count) != 0) {
+		DEBUG_PRINT("Failed to parse HCL options(err:%s)\n", mconfig_get_err());
 		return -1;
 	}
+
+	DEBUG_PRINT("Success to parse HCL options\n");
 
 	if (mconfig_parse_cmdline(mcfg_opts, mcfg_opts_count, argc, argv) != 0) {
 		free(mcfg_opts);

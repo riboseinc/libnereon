@@ -65,6 +65,13 @@ AC_CHECK_LIB([ucl], [ucl_object_new], [],
 	AC_MSG_ERROR([Could not found libucl library. Please specify libucl installation directory])
 ])
 
+AC_ARG_ENABLE(debug,
+     AS_HELP_STRING(--enable-debug, turn on debugging (disabled by default)),
+     [], [enable_debug=no]
+)
+if test "x$enable_debug" = "xyes" ; then
+    CFLAGS="$CFLAGS -g3 -O0 -DDEBUG"
+fi
 
 AC_CONFIG_FILES([Makefile
                 src/Makefile

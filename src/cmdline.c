@@ -137,6 +137,8 @@ int mconfig_parse_cmdline(struct mconfig_hcl_options *hcl_opts, int hcl_opts_cou
 	if (args_count == 1)
 		return 0;
 
+	DEBUG_PRINT("Parsing command line arguments\n");
+
 	for (i = 1; i < args_count; i++) {
 		int opt_idx;
 
