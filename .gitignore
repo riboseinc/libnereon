@@ -23,6 +23,6 @@ stamp-h1
 *.lo
 *.o
 *.la
-tests/cmdline
+tests/cli_test
 tests/ucl_test
-
+tests/cfg_test

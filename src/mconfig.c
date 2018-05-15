@@ -40,29 +40,68 @@
 #include "mconfig.h"
 
 /*
- * intiialize multi-config
+ * Intiialize multiconfig context object
  */
 
-int mconfig_init(const char *hcl_options, int argc, char **argv)
+int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options)
 {
-	struct mconfig_hcl_options *mcfg_opts = NULL;
+	struct mcfg_hcl_options *mcfg_opts = NULL;
 	int mcfg_opts_count = 0;
 
 	DEBUG_PRINT("Initializing multiconfig\n");
 
+	memset(mctx, 0, sizeof(mconfig_ctx_t));
+
 	/* parse HCL options */
-	if (mconfig_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count) != 0) {
-		DEBUG_PRINT("Failed to parse HCL options(err:%s)\n", mconfig_get_err());
+	if (mcfg_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count) != 0) {
+		DEBUG_PRINT("Failed to parse HCL options(err:%s)\n", mcfg_get_err());
 		return -1;
 	}
 
-	DEBUG_PRINT("Success to parse HCL options\n");
-
-	if (mconfig_parse_cmdline(mcfg_opts, mcfg_opts_count, argc, argv) != 0) {
-		free(mcfg_opts);
-		return -1;
-	}
-	free(mcfg_opts);
+	mctx->hcl_opts = (void *)mcfg_opts;
+	mctx->hcl_opts_count = mcfg_opts_count;
 
 	return 0;
+}
+
+/*
+ * Finalize multiconfig context object
+ */
+
+void mconfig_ctx_finalize(mconfig_ctx_t *mctx)
+{
+	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+
+	mcfg_free_hcl_options(hcl_opts, mctx->hcl_opts_count);
+}
+
+/*
+ * Parse command line arguments
+ */
+
+int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv)
+{
+	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+
+	return mcfg_parse_cmdline(hcl_opts, mctx->hcl_opts_count, argc, argv);
+}
+
+/*
+ * Print multiconfig command line usage message
+ */
+
+void mconfig_print_usage(mconfig_ctx_t *mctx)
+{
+	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+
+	mcfg_print_cmdline_usage(hcl_opts, mctx->hcl_opts_count);
+}
+
+/*
+ * Get the last error message of library
+ */
+
+const char *mconfig_get_errmsg()
+{
+	return mcfg_get_err();
 }

@@ -26,15 +26,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 
+#include <sys/stat.h>
 #include <ucl.h>
 
+#include "mconfig.h"
 #include "test_util.h"
 
-static void usage(void)
+#define TEST_CFG_HCL                  "tests/cfg.hcl"
+
+static void usage(const char *prog_name)
 {
-	fprintf(stderr, "%s <HCL filename>\n", getprogname());
+	fprintf(stderr, "%s <HCL filename>\n", prog_name);
 	exit(1);
 }
 
@@ -106,6 +109,10 @@ ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
 	free (pre);
 }
 
+/*
+ * main function
+ */
+
 int main(int argc, char *argv[])
 {
 	struct ucl_parser *parser;
@@ -117,7 +124,7 @@ int main(int argc, char *argv[])
 	int ret = -1;
 
 	if (argc != 2) {
-		usage();
+		usage(argv[0]);
 	}
 
 	if ((buf_size = read_file_contents(argv[1], &buf)) <= 0) {

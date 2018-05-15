@@ -82,3 +82,23 @@ size_t strlcat(char *dst, const char *src, size_t size)
 }
 
 #endif
+
+/*
+ * fill bytes with given charactor
+ */
+
+char *fill_bytes(char ch, size_t len)
+{
+	char *p;
+	unsigned int i;
+
+	p = (char *)malloc(len + 1);
+	if (!p)
+		return NULL;
+
+	for (i = 0; i < len; i++)
+		p[i] = ch;
+	p[len] = '\0';
+
+	return p;
+}

@@ -8,6 +8,7 @@
 	#define DEBUG_PRINT(fmt, args...)
 #endif
 
-void mconfig_set_err(const char *err_fmt, ...);
+void mcfg_set_err(const char *err_fmt, ...);
+const char *mcfg_get_err(void);
 
 #endif /* __MCONFIG_ERR_H__ */

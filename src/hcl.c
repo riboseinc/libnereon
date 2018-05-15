@@ -43,20 +43,20 @@
  * parse option types
  */
 
-static enum CFG_TYPE parse_opt_type(const char *type_str)
+static enum MCFG_TYPE parse_opt_type(const char *type_str)
 {
-	enum CFG_TYPE cfg_type = CFG_TYPE_UNKNOWN;
+	enum MCFG_TYPE cfg_type = MCFG_TYPE_UNKNOWN;
 
 	if (strcmp(type_str, "string") == 0)
-		cfg_type = CFG_TYPE_STRING;
+		cfg_type = MCFG_TYPE_STRING;
 	else if (strcmp(type_str, "int") == 0)
-		cfg_type = CFG_TYPE_INT;
+		cfg_type = MCFG_TYPE_INT;
 	else if (strcmp(type_str, "array") == 0)
-		cfg_type = CFG_TYPE_ARRAY;
+		cfg_type = MCFG_TYPE_ARRAY;
 	else if (strcmp(type_str, "ipport") == 0)
-		cfg_type = CFG_TYPE_IPPORT;
+		cfg_type = MCFG_TYPE_IPPORT;
 	else if (strcmp(type_str, "bool") == 0)
-		cfg_type = CFG_TYPE_BOOL;
+		cfg_type = MCFG_TYPE_BOOL;
 
 	return cfg_type;
 }
@@ -65,7 +65,7 @@ static enum CFG_TYPE parse_opt_type(const char *type_str)
  * parse switch options
  */
 
-static int parse_switch_options(const ucl_object_t *obj, struct mconfig_hcl_options *opt)
+static int parse_switch_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -88,7 +88,7 @@ static int parse_switch_options(const ucl_object_t *obj, struct mconfig_hcl_opti
  * parse description options
  */
 
-static int parse_desc_options(const ucl_object_t *obj, struct mconfig_hcl_options *opt)
+static int parse_desc_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -109,7 +109,7 @@ static int parse_desc_options(const ucl_object_t *obj, struct mconfig_hcl_option
  * parse options
  */
 
-static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *opt)
+static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -121,17 +121,17 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 	/* get type */
 	sub_obj = ucl_object_lookup(obj, "type");
 	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		mconfig_set_err("Could not found 'type' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not found 'type' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	opt->cfg_type = parse_opt_type(ucl_object_tostring(sub_obj));
-	if (opt->cfg_type == CFG_TYPE_UNKNOWN) {
-		mconfig_set_err("Invalid configuration type '%s' for config '%s'", ucl_object_tostring(sub_obj), opt->cfg_name);
+	if (opt->cfg_type == MCFG_TYPE_UNKNOWN) {
+		mcfg_set_err("Invalid configuration type '%s' for config '%s'", ucl_object_tostring(sub_obj), opt->cfg_name);
 		return -1;
 	}
 
-	if (opt->cfg_type == CFG_TYPE_BOOL) {
+	if (opt->cfg_type == MCFG_TYPE_BOOL) {
 		sub_obj = ucl_object_lookup(obj, "helper");
 		if (sub_obj && sub_obj->type == UCL_BOOLEAN) {
 			opt->helper = ucl_object_toboolean(sub_obj);
@@ -141,24 +141,24 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "switch");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mconfig_set_err("Could not found 'switch' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not found 'switch' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	if (parse_switch_options(sub_obj, opt) != 0) {
-		mconfig_set_err("Invalid switch options for config '%s'", opt->cfg_name);
+		mcfg_set_err("Invalid switch options for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	/* get description */
 	sub_obj = ucl_object_lookup(obj, "description");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mconfig_set_err("Could not found 'description' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not found 'description' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	if (parse_desc_options(sub_obj, opt) != 0) {
-		mconfig_set_err("Invalid description options for config '%s'", opt->cfg_name);
+		mcfg_set_err("Invalid description options for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
@@ -170,7 +170,7 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
 
 	/* get config */
 	sub_obj = ucl_object_lookup(obj, "config");
-	if (sub_obj || sub_obj->type == UCL_STRING) {
+	if (sub_obj && sub_obj->type == UCL_STRING) {
 		strlcpy(opt->cfg_key, ucl_object_tostring(sub_obj), sizeof(opt->cfg_key));
 	}
 
@@ -181,7 +181,7 @@ static int parse_options(const ucl_object_t *obj, struct mconfig_hcl_options *op
  * parse cmdline options
  */
 
-static int parse_cmdline_options(const ucl_object_t *obj, struct mconfig_hcl_options **hcl_opts, int *hcl_opts_count)
+static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
 {
 	const ucl_object_t *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
@@ -194,22 +194,26 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mconfig_hcl_opt
 
 		it_obj = NULL;
 		while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-			struct mconfig_hcl_options opt;
+			struct mcfg_hcl_options opt;
 
-			memset(&opt, 0, sizeof(struct mconfig_hcl_options));
+			memset(&opt, 0, sizeof(struct mcfg_hcl_options));
 			if (parse_options(cur, &opt) == 0) {
-				*hcl_opts = (struct mconfig_hcl_options *)realloc(*hcl_opts,
-							(*hcl_opts_count + 1) * sizeof(struct mconfig_hcl_options));
+				*hcl_opts = (struct mcfg_hcl_options *)realloc(*hcl_opts,
+							(*hcl_opts_count + 1) * sizeof(struct mcfg_hcl_options));
 				if (*hcl_opts == NULL) {
-					mconfig_set_err("Out of memory!");
+					mcfg_set_err("Out of memory!");
 					ret = -1;
 				}
 				else {
-					memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mconfig_hcl_options));
+					memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mcfg_hcl_options));
 					(*hcl_opts_count)++;
 				}
-			} else
+			} else {
+				if (*hcl_opts)
+					free(*hcl_opts);
+
 				ret = -1;
+			}
 		}
 	}
 
@@ -220,12 +224,12 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mconfig_hcl_opt
  * parse HCL options
  */
 
-static int parse_hcl_options(const ucl_object_t *obj, struct mconfig_hcl_options **hcl_opts, int *hcl_opts_count)
+static int parse_hcl_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
 {
 	const ucl_object_t *tmp, *cur;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
-	struct mconfig_hcl_options *opt;
+	struct mcfg_hcl_options *opt;
 
 	int ret = 0;
 
@@ -247,7 +251,7 @@ static int parse_hcl_options(const ucl_object_t *obj, struct mconfig_hcl_options
  * parse HCL options
  */
 
-int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_opts, int *hcl_opts_count)
+int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
 {
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
@@ -259,13 +263,13 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
 	if (!parser) {
-		mconfig_set_err("Could not create UCL parser");
+		mcfg_set_err("Could not create UCL parser");
 		return -1;
 	}
 	ucl_parser_add_chunk(parser, (const unsigned char*)hcl, strlen(hcl));
 
 	if (ucl_parser_get_error(parser) != NULL) {
-		mconfig_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
+		mcfg_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;
@@ -273,7 +277,7 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 
 	obj = ucl_parser_get_object(parser);
 	if (!obj) {
-		mconfig_set_err("Failed to get HCL object(%s)", ucl_parser_get_error(parser));
+		mcfg_set_err("Failed to get HCL object(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;
@@ -287,4 +291,24 @@ int mconfig_parse_hcl_options(const char *hcl, struct mconfig_hcl_options **hcl_
 	ucl_parser_free(parser);
 
 	return ret;
+}
+
+/*
+ * free HCL options
+ */
+
+void mcfg_free_hcl_options(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count)
+{
+	int i;
+
+	for (i = 0; i < hcl_opts_count; i++) {
+		struct mcfg_hcl_options *opt = &hcl_opts[i];
+
+		if (opt->cfg_type == MCFG_TYPE_STRING || opt->cfg_type == MCFG_TYPE_IPPORT) {
+			if (opt->cfg_data.str)
+				free(opt->cfg_data.str);
+		}
+	}
+
+	free(hcl_opts);
 }
