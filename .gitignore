@@ -25,4 +25,4 @@ stamp-h1
 *.la
 tests/cli_test
 tests/ucl_test
-
+tests/cfg_test

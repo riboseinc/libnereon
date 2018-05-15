@@ -14,6 +14,12 @@ enum MCFG_TYPE {
 	MCFG_TYPE_UNKNOWN
 };
 
+union _cfg_data {
+	int i;
+	char *str;
+	bool b;
+};
+
 /*
  * multiconfig HCL options
  */
@@ -33,11 +39,23 @@ struct mcfg_hcl_options {
 	char cfg_env[CFG_MAX_ENV_NAME];
 	char cfg_key[CFG_MAX_KEY_NAME];
 
-	union {
-		int i;
-		char *str;
-		bool b;
-	} cfg_data;
+	union _cfg_data cfg_data;
+};
+
+/*
+ * multiconfig config HCL options
+ */
+
+struct mcfg_cfg_options {
+	char cfg_key[CFG_MAX_KEY_NAME];
+	enum MCFG_TYPE cfg_type;
+
+	int childs_count;
+	struct mcfg_cfg_options *childs;
+
+	struct mcfg_cfg_options *next;
+
+	union _cfg_data cfg_data;
 };
 
 /*

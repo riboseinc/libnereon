@@ -29,6 +29,12 @@ void mconfig_ctx_finalize(mconfig_ctx_t *mctx);
 int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv);
 
 /*
+ * Parse configuration file
+ */
+
+int mconfig_parse_cfg(mconfig_ctx_t *mctx, const char *cfg_fpath);
+
+/*
  * Print multiconfig command line usage
  */
 
