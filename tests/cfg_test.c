@@ -50,9 +50,9 @@ struct hcl_option {
 
 static struct hcl_option *g_opts;
 
-static void usage(const char *prog_name)
+static void usage(void)
 {
-	fprintf(stderr, "%s <HCL filename>\n", prog_name);
+	fprintf(stderr, "%s <HCL filename>\n", getprogname());
 	exit(1);
 }
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	int ret = -1;
 
 	if (argc != 2) {
-		usage(argv[0]);
+		usage();
 	}
 
 	if ((buf_size = read_file_contents(argv[1], &buf)) <= 0) {

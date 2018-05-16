@@ -150,7 +150,7 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 	/* get type */
 	sub_obj = ucl_object_lookup(obj, "type");
 	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		mcfg_set_err("Could not found 'type' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not find 'type' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
@@ -170,12 +170,12 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "cmdline");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mcfg_set_err("Could not found 'cmdline' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not find 'cmdline' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	if (parse_cmdline_options(sub_obj, opt) != 0) {
-		mcfg_set_err("Invalid cmdline options for config '%s'", opt->cfg_name);
+		mcfg_set_err("Invalid cmdline option for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
