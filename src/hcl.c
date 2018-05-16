@@ -69,6 +69,8 @@ static int parse_switch_options(const ucl_object_t *obj, struct mcfg_hcl_options
 {
 	const ucl_object_t *sub_obj;
 
+	DEBUG_PRINT("Parsing switch options\n");
+
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (!sub_obj || sub_obj->type != UCL_STRING)
 		return -1;
@@ -92,6 +94,8 @@ static int parse_desc_options(const ucl_object_t *obj, struct mcfg_hcl_options *
 {
 	const ucl_object_t *sub_obj;
 
+	DEBUG_PRINT("Parsing description options\n");
+
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (!sub_obj || sub_obj->type != UCL_STRING)
 		return -1;
@@ -101,6 +105,31 @@ static int parse_desc_options(const ucl_object_t *obj, struct mcfg_hcl_options *
 	if (!sub_obj || sub_obj->type != UCL_STRING)
 		return -1;
 	strlcpy(opt->desc_long, ucl_object_tostring(sub_obj), sizeof(opt->desc_long));
+
+	return 0;
+}
+
+/*
+ * parse cmdline options
+ */
+
+static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
+{
+	const ucl_object_t *sub_obj;
+
+	sub_obj = ucl_object_lookup(obj, "switch");
+	if (!sub_obj || sub_obj->type != UCL_OBJECT ||
+		parse_switch_options(sub_obj, opt) != 0) {
+		return -1;
+	}
+
+	sub_obj = ucl_object_lookup(obj, "description");
+	if (!sub_obj)
+		sub_obj = ucl_object_lookup(obj->next, "description");
+	if (!sub_obj || sub_obj->type != UCL_OBJECT ||
+		parse_desc_options(sub_obj, opt) != 0) {
+		return -1;
+	}
 
 	return 0;
 }
@@ -139,26 +168,14 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
 	}
 
 	/* get switch */
-	sub_obj = ucl_object_lookup(obj, "switch");
+	sub_obj = ucl_object_lookup(obj, "cmdline");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mcfg_set_err("Could not found 'switch' key for config '%s'", opt->cfg_name);
+		mcfg_set_err("Could not found 'cmdline' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
-	if (parse_switch_options(sub_obj, opt) != 0) {
-		mcfg_set_err("Invalid switch options for config '%s'", opt->cfg_name);
-		return -1;
-	}
-
-	/* get description */
-	sub_obj = ucl_object_lookup(obj, "description");
-	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mcfg_set_err("Could not found 'description' key for config '%s'", opt->cfg_name);
-		return -1;
-	}
-
-	if (parse_desc_options(sub_obj, opt) != 0) {
-		mcfg_set_err("Invalid description options for config '%s'", opt->cfg_name);
+	if (parse_cmdline_options(sub_obj, opt) != 0) {
+		mcfg_set_err("Invalid cmdline options for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
@@ -181,7 +198,7 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
  * parse cmdline options
  */
 
-static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
+static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
 {
 	const ucl_object_t *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
@@ -190,30 +207,26 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_option
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false)) && ret == 0) {
-		const ucl_object_t *cur;
+		struct mcfg_hcl_options opt;
 
-		it_obj = NULL;
-		while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-			struct mcfg_hcl_options opt;
+		DEBUG_PRINT("parse_mcfg_options() key:%s\n", obj->key);
 
-			memset(&opt, 0, sizeof(struct mcfg_hcl_options));
-			if (parse_options(cur, &opt) == 0) {
-				*hcl_opts = (struct mcfg_hcl_options *)realloc(*hcl_opts,
-							(*hcl_opts_count + 1) * sizeof(struct mcfg_hcl_options));
-				if (*hcl_opts == NULL) {
-					mcfg_set_err("Out of memory!");
-					ret = -1;
-				}
-				else {
-					memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mcfg_hcl_options));
-					(*hcl_opts_count)++;
-				}
-			} else {
-				if (*hcl_opts)
-					free(*hcl_opts);
-
+		memset(&opt, 0, sizeof(struct mcfg_hcl_options));
+		if (parse_options(obj, &opt) == 0) {
+			*hcl_opts = (struct mcfg_hcl_options *)realloc(*hcl_opts,
+						(*hcl_opts_count + 1) * sizeof(struct mcfg_hcl_options));
+			if (*hcl_opts == NULL) {
+				mcfg_set_err("Out of memory!");
 				ret = -1;
+			} else {
+				memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mcfg_hcl_options));
+				(*hcl_opts_count)++;
 			}
+		} else {
+			if (*hcl_opts)
+				free(*hcl_opts);
+
+			ret = -1;
 		}
 	}
 
@@ -238,7 +251,7 @@ static int parse_hcl_options(const ucl_object_t *obj, struct mcfg_hcl_options **
 		if (obj->type == UCL_OBJECT) {
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-				ret = parse_cmdline_options(cur, hcl_opts, hcl_opts_count);
+				ret = parse_mcfg_options(cur, hcl_opts, hcl_opts_count);
 			}
 		} else
 			ret = -1;

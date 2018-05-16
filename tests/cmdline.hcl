@@ -1,14 +1,14 @@
 
 # This HCL contains the configurations related to command line options
 
-cmdline "log_directory" {
+log_directory {
 	type = "string"
-	switch {
+	cmdline "switch" {
 		short = "l"
 		long = "log-dir"
 	}
 
-	description {
+	cmdline "description" {
 		short = "log directory"
 		long = "Specify the path of log directory"
 	}
@@ -17,14 +17,14 @@ cmdline "log_directory" {
 	config = "global.log_directory"
 }
 
-cmdline "log_level" {
+log_level {
 	type = "int"
-	switch {
+	cmdline "switch" {
 		short = "d"
 		long = "verbose"
 	}
 
-	description {
+	cmdline "description" {
 		short = "verbose level (0 ~ 3)"
 		long = "Specify the verbose level"
 	}
@@ -33,14 +33,14 @@ cmdline "log_level" {
 	config = "global.log_level"
 }
 
-cmdline "listen_address" {
+listen_address {
 	type = "ipport"
-	switch {
+	cmdline "switch" {
 		short = "L"
 		long = "listen"
 	}
 
-	description = {
+	cmdline "description" {
 		short = "IP:port"
 		long = "Specify the listening address for Kaohi console"
 	}
@@ -49,14 +49,14 @@ cmdline "listen_address" {
 	config = "global.listen_address"
 }
 
-cmdline "help" {
+help {
 	type = "bool"
-	switch {
+	cmdline "switch" {
 		short = "h"
 		long = "help"
 	}
 
-	description = {
+	cmdline "description" {
 		short = ""
 		long = "Print help message"
 	}

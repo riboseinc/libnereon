@@ -35,10 +35,45 @@
 
 #define TEST_CFG_HCL                  "tests/cfg.hcl"
 
+struct hcl_option {
+	char key[128];
+	int type;
+
+	int level;
+
+	struct hcl_option *childs;
+	struct hcl_option *next;
+	struct hcl_option *parent;
+
+	void *data;
+}
+
+static struct hcl_option *g_opts;
+
 static void usage(const char *prog_name)
 {
 	fprintf(stderr, "%s <HCL filename>\n", prog_name);
 	exit(1);
+}
+
+void add_hcl_option(const char *key, int type, int level, const char *parent_key)
+{
+	struct hcl_option *opt;
+
+	opt = (struct hcl_option *)malloc(sizeof(struct hcl_option));
+	if (!opt)
+		return;
+
+	memset(opt, 0, sizeof(struct hcl_option));
+
+	strlcpy(opt->key, key);
+	strlcpy(opt->parent_key, parent_key);
+	opt->type = type;
+	opt->level = level;
+
+	if (opt->level == 0) {
+
+	}
 }
 
 void
@@ -149,6 +184,9 @@ int main(int argc, char *argv[])
 		goto end;
 	}
 	ucl_obj_dump(obj, 0);
+
+	/* build HCL options from object */
+	build_hcl_cfg(obj);
 
 	ret = 0;
 
