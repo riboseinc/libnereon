@@ -50,9 +50,7 @@ struct mcfg_cfg_options {
 	char cfg_key[CFG_MAX_KEY_NAME];
 	enum MCFG_TYPE cfg_type;
 
-	int childs_count;
 	struct mcfg_cfg_options *childs;
-
 	struct mcfg_cfg_options *next;
 
 	union _cfg_data cfg_data;
