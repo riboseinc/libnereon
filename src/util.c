@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include "util.h"
 
@@ -101,4 +102,38 @@ char *fill_bytes(char ch, size_t len)
 	p[len] = '\0';
 
 	return p;
+}
+
+/*
+ * read file contents
+ */
+
+size_t read_file_contents(const char *fpath, char **buf)
+{
+	FILE *fp;
+	struct stat st;
+	size_t read_len;
+
+	if (stat(fpath, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size == 0) {
+		return 0;
+	}
+
+	fp = fopen(fpath, "r");
+	if (!fp) {
+		return 0;
+	}
+
+	*buf = (char *) malloc(st.st_size + 1);
+	if (*buf == NULL) {
+		fclose(fp);
+		return 0;
+	}
+
+	read_len = fread(*buf, 1, st.st_size, fp);
+	if (read_len > 0) {
+		(*buf)[read_len] = '\0';
+	}
+	fclose(fp);
+
+	return read_len;
 }

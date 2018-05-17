@@ -1,7 +1,7 @@
 
 # This HCL contains the configurations related to command line options
 
-config_option "log_directory" {
+log_directory {
 	type = "string"
 	cmdline "switch" {
 		short = "l"
@@ -17,7 +17,7 @@ config_option "log_directory" {
 	config = "global.log_directory"
 }
 
-config_option "log_level" {
+log_level {
 	type = "int"
 	cmdline "switch" {
 		short = "d"
@@ -33,7 +33,7 @@ config_option "log_level" {
 	config = "global.log_level"
 }
 
-config_option "listen_address" {
+listen_address {
 	type = "ipport"
 	cmdline "switch" {
 		short = "L"
@@ -50,6 +50,7 @@ config_option "listen_address" {
 }
 
 helper {
+	type = "bool"
 	cmdline "switch" {
 		short = "h"
 		long = "help"
