@@ -35,14 +35,83 @@
 
 #define TEST_CFG_HCL                  "tests/cfg.hcl"
 
-static void usage(const char *prog_name)
+struct hcl_config {
+	char key[128];
+	int type;
+
+	int level;
+
+	struct hcl_config *childs;
+	struct hcl_config *next;
+
+	void *data;
+};
+
+static struct hcl_config *g_cfg_list;
+
+void free_hcl_configs(struct hcl_config *cfg)
 {
-	fprintf(stderr, "%s <HCL filename>\n", prog_name);
-	exit(1);
+	if (!cfg)
+		return;
+
+	if (cfg->childs) {
+		struct hcl_config *p = cfg->childs;
+
+		while (p) {
+			free_hcl_configs(p);
+			p = p->next;
+		}
+	}
+	free(cfg);
+}
+
+static void print_hcl_configs(struct hcl_config *cfg)
+{
+	if (!cfg)
+		return;
+
+	fprintf(stderr, "key: %s\n", cfg->key);
+
+	if (cfg->childs) {
+		struct hcl_config *p = cfg->childs;
+
+		while (p) {
+			print_hcl_configs(p);
+			p = p->next;
+		}
+	}
+}
+
+static struct hcl_config *add_cfg_to_list(struct hcl_config *parent_cfg)
+{
+	struct hcl_config *cfg;
+
+	cfg = (struct hcl_config *)malloc(sizeof(struct hcl_config));
+	if (!cfg)
+		return NULL;
+	memset(cfg, 0, sizeof(struct hcl_config));
+
+	if (!parent_cfg) {
+		g_cfg_list = cfg;
+		return cfg;
+	}
+
+	if (!parent_cfg->childs) {
+		parent_cfg->childs = cfg;
+	} else {
+		struct hcl_config *p = parent_cfg->childs;
+
+		while (p->next)
+			p = p->next;
+
+		p->next = cfg;
+	}
+
+	return cfg;
 }
 
 void
-ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
+ucl_obj_dump(const ucl_object_t *obj, struct hcl_config *parent_cfg, unsigned int shift, int level)
 {
 	int num = shift * 4 + 5;
 	char *pre = (char *) malloc (num * sizeof(char));
@@ -56,10 +125,23 @@ ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
 	tmp = obj;
 
 	while ((obj = ucl_object_iterate (tmp, &it, false))) {
+		struct hcl_config *cfg;
+
+		/* create HCL config from UCL object */
+		cfg = add_cfg_to_list(parent_cfg);
+		if (!cfg) {
+			fprintf(stderr, "Out of memory!\n");
+			return;
+		}
+
 		printf ("%sucl object address: %p\n", pre + 4, obj);
 		if (obj->key != NULL) {
 			printf ("%skey: \"%s\"\n", pre, ucl_object_key (obj));
+			strlcpy(cfg->key, obj->key, sizeof(cfg->key));
 		}
+		printf ("%slevel: %u\n", pre, level);
+		printf ("%scfg: %p\n", pre, cfg);
+		printf ("%sparent_cfg: %p\n", pre, parent_cfg);
 		printf ("%sref: %u\n", pre, obj->ref);
 		printf ("%slen: %u\n", pre, obj->len);
 		printf ("%sprev: %p\n", pre, obj->prev);
@@ -69,7 +151,7 @@ ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
 			printf ("%svalue: %p\n", pre, obj->value.ov);
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate (obj, &it_obj, true))) {
-				ucl_obj_dump (cur, shift + 2);
+				ucl_obj_dump (cur, cfg, shift + 2, level + 1);
 			}
 		}
 		else if (obj->type == UCL_ARRAY) {
@@ -77,7 +159,7 @@ ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
 			printf ("%svalue: %p\n", pre, obj->value.av);
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate (obj, &it_obj, true))) {
-				ucl_obj_dump (cur, shift + 2);
+				ucl_obj_dump (cur, cfg, shift + 2, level + 1);
 			}
 		}
 		else if (obj->type == UCL_INT) {
@@ -104,6 +186,9 @@ ucl_obj_dump (const ucl_object_t *obj, unsigned int shift)
 			printf ("%stype: UCL_USERDATA\n", pre);
 			printf ("%svalue: %p\n", pre, obj->value.ud);
 		}
+
+		/* create config object */
+
 	}
 
 	free (pre);
@@ -123,11 +208,7 @@ int main(int argc, char *argv[])
 
 	int ret = -1;
 
-	if (argc != 2) {
-		usage(argv[0]);
-	}
-
-	if ((buf_size = read_file_contents(argv[1], &buf)) <= 0) {
+	if ((buf_size = read_file_contents(TEST_CFG_HCL, &buf)) <= 0) {
 		exit(1);
 	}
 
@@ -148,7 +229,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Failed to get UCL object(err:%s)\n", ucl_parser_get_error(parser));
 		goto end;
 	}
-	ucl_obj_dump(obj, 0);
+
+	/* init config list */
+	ucl_obj_dump(obj, NULL, 0, 0);
+
+	/* print hcl configs */
+	print_hcl_configs(g_cfg_list);
 
 	ret = 0;
 
@@ -161,6 +247,8 @@ end:
 
 	if (buf)
 		free(buf);
+
+	free_hcl_configs(g_cfg_list);
 
 	return ret;
 }

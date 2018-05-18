@@ -12,6 +12,12 @@ config-files "group1" {
 	]
 }
 
+config-files "group2" {
+	files = [
+		"/var/log/openvpn.log",
+	]
+}
+
 commands "group1" {
 	uid = 501
 	interval = 10

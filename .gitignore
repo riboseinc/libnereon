@@ -26,3 +26,4 @@ stamp-h1
 tests/cli_test
 tests/ucl_test
 tests/cfg_test
+tests/cfg_test1

@@ -30,13 +30,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "common.h"
 
 #include "hcl.h"
 #include "cmdline.h"
 #include "err.h"
+#include "util.h"
+#include "cfg.h"
+
 #include "mconfig.h"
 
 /*
@@ -71,8 +73,38 @@ int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options)
 void mconfig_ctx_finalize(mconfig_ctx_t *mctx)
 {
 	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+	struct mcfg_cfg_options *cfg_opts = (struct mcfg_cfg_options *)mctx->cfg_opts;
 
+	mconfig_free_cfg_options(cfg_opts);
 	mcfg_free_hcl_options(hcl_opts, mctx->hcl_opts_count);
+}
+
+/*
+ * Parse configuration file
+ */
+
+int mconfig_parse_config(mconfig_ctx_t *mctx, const char *cfg_fpath)
+{
+	struct mcfg_cfg_options *cfg_opt = NULL;
+	char *cfg_hcl = NULL;
+
+	int ret;
+
+	DEBUG_PRINT("Parsing configuration file '%s'\n", cfg_fpath);
+
+	/* get configuration contents */
+	if (read_file_contents(cfg_fpath, &cfg_hcl) == 0) {
+		mcfg_set_err("Could not read configuration file '%s'", cfg_fpath);
+		return -1;
+	}
+
+	ret = mconfig_parse_cfg_options(cfg_hcl, &cfg_opt);
+	if (ret == 0) {
+		mctx->cfg_opts = (void *)cfg_opt;
+	}
+	free(cfg_hcl);
+
+	return ret;
 }
 
 /*

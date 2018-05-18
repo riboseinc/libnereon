@@ -8,6 +8,8 @@
 typedef struct mconfig_ctx {
 	void *hcl_opts;
 	int hcl_opts_count;
+
+	void *cfg_opts;
 } mconfig_ctx_t;
 
 /*
@@ -32,7 +34,7 @@ int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv);
  * Parse configuration file
  */
 
-int mconfig_parse_cfg(mconfig_ctx_t *mctx, const char *cfg_fpath);
+int mconfig_parse_config(mconfig_ctx_t *mctx, const char *cfg_fpath);
 
 /*
  * Print multiconfig command line usage

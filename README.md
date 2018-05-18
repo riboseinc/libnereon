@@ -12,7 +12,7 @@ This library uses [libucl](https://github.com/vstakhov/libucl).
 
 ## HCL options for libmulticonfig
 
-HCL options is to configure command-line arguments, environment variables and configuration fields.</br>
+HCL options have configuration model to specify command-line arguments, environment variables and configuration fields.</br>
 Here is an example:
 
 ```

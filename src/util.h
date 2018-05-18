@@ -13,4 +13,6 @@ size_t strlcat(char *dst, const char *src, size_t size);
 
 char *fill_bytes(char ch, size_t len);
 
+size_t read_file_contents(const char *fpath, char **buf);
+
 #endif /* __MCONFIG_UTIL_H__ */

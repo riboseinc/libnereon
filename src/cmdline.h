@@ -1,5 +1,5 @@
-#ifndef __CMDLINE_H__
-#define __CMDLINE_H__
+#ifndef __MCONFIG_CMDLINE_H__
+#define __MCONFIG_CMDLINE_H__
 
 /*
  * parse command line
@@ -13,4 +13,4 @@ int mcfg_parse_cmdline(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count, in
 
 void mcfg_print_cmdline_usage(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count);
 
-#endif /* __CMDLINE_H__ */
+#endif /* __MCONFIG_CMDLINE_H__ */
