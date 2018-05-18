@@ -5,12 +5,12 @@
  * parse command line
  */
 
-int mcfg_parse_cmdline(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count, int argc, char **argv);
+int mcfg_parse_cmdline(struct mcfg_meta_options *meta_opts, int meta_opts_count, int argc, char **argv);
 
 /*
  * print command line usage
  */
 
-void mcfg_print_cmdline_usage(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count);
+void mcfg_print_cmdline_usage(struct mcfg_meta_options *meta_opts, int meta_opts_count);
 
 #endif /* __MCONFIG_CMDLINE_H__ */

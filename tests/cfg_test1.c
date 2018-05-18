@@ -42,27 +42,13 @@
 int main(int argc, char *argv[])
 {
 	mconfig_ctx_t mctx;
-
-	char *hcl_options = NULL;
 	int ret;
 
-	/* read HCL options */
-	if (read_file_contents(TEST_CMDLINE_HCL, &hcl_options) <= 0)
-		exit(1);
-
 	/* initialize multiconfig context */
-	ret = mconfig_ctx_init(&mctx, hcl_options);
+	ret = mconfig_ctx_init(&mctx, TEST_CONFIG_HCL, TEST_CMDLINE_HCL);
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize multiconfig context(err:%s)\n", mconfig_get_errmsg());
-		free(hcl_options);
-
 		return -1;
-	}
-	free(hcl_options);
-
-	/* print command line usage */
-	if (mconfig_parse_config(&mctx, TEST_CONFIG_HCL) != 0) {
-		fprintf(stderr, "Failed to parse config file(err:%s)\n", mconfig_get_errmsg());
 	}
 
 	/* finalize multiconfig context */

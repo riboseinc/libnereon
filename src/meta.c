@@ -36,7 +36,7 @@
 #include "err.h"
 #include "util.h"
 
-#include "hcl.h"
+#include "meta.h"
 
 /*
  * parse option types
@@ -64,7 +64,7 @@ static enum MCFG_TYPE parse_opt_type(const char *type_str)
  * parse switch options
  */
 
-static int parse_switch_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
+static int parse_switch_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -89,7 +89,7 @@ static int parse_switch_options(const ucl_object_t *obj, struct mcfg_hcl_options
  * parse description options
  */
 
-static int parse_desc_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
+static int parse_desc_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -112,7 +112,7 @@ static int parse_desc_options(const ucl_object_t *obj, struct mcfg_hcl_options *
  * parse cmdline options
  */
 
-static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
+static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -137,7 +137,7 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_hcl_option
  * parse options
  */
 
-static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
+static int parse_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -197,7 +197,7 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_hcl_options *opt)
  * parse cmdline options
  */
 
-static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
+static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
 {
 	const ucl_object_t *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
@@ -206,24 +206,24 @@ static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_hcl_options *
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false)) && ret == 0) {
-		struct mcfg_hcl_options opt;
+		struct mcfg_meta_options opt;
 
 		DEBUG_PRINT("parse_mcfg_options() key:%s\n", obj->key);
 
-		memset(&opt, 0, sizeof(struct mcfg_hcl_options));
+		memset(&opt, 0, sizeof(struct mcfg_meta_options));
 		if (parse_options(obj, &opt) == 0) {
-			*hcl_opts = (struct mcfg_hcl_options *)realloc(*hcl_opts,
-						(*hcl_opts_count + 1) * sizeof(struct mcfg_hcl_options));
-			if (*hcl_opts == NULL) {
+			*meta_opts = (struct mcfg_meta_options *)realloc(*meta_opts,
+						(*meta_opts_count + 1) * sizeof(struct mcfg_meta_options));
+			if (*meta_opts == NULL) {
 				mcfg_set_err("Out of memory!");
 				ret = -1;
 			} else {
-				memcpy(&(*hcl_opts)[*hcl_opts_count], &opt, sizeof(struct mcfg_hcl_options));
-				(*hcl_opts_count)++;
+				memcpy(&(*meta_opts)[*meta_opts_count], &opt, sizeof(struct mcfg_meta_options));
+				(*meta_opts_count)++;
 			}
 		} else {
-			if (*hcl_opts)
-				free(*hcl_opts);
+			if (*meta_opts)
+				free(*meta_opts);
 
 			ret = -1;
 		}
@@ -236,12 +236,12 @@ static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_hcl_options *
  * parse HCL options
  */
 
-static int parse_hcl_options(const ucl_object_t *obj, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
+static int parse_meta_options(const ucl_object_t *obj, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
 {
 	const ucl_object_t *tmp, *cur;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
-	struct mcfg_hcl_options *opt;
+	struct mcfg_meta_options *opt;
 
 	int ret = 0;
 
@@ -250,7 +250,7 @@ static int parse_hcl_options(const ucl_object_t *obj, struct mcfg_hcl_options **
 		if (obj->type == UCL_OBJECT) {
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-				ret = parse_mcfg_options(cur, hcl_opts, hcl_opts_count);
+				ret = parse_mcfg_options(cur, meta_opts, meta_opts_count);
 			}
 		} else
 			ret = -1;
@@ -263,8 +263,10 @@ static int parse_hcl_options(const ucl_object_t *obj, struct mcfg_hcl_options **
  * parse HCL options
  */
 
-int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count)
+int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
 {
+	char *meta_cfg;
+
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
 
@@ -272,13 +274,22 @@ int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, 
 
 	DEBUG_PRINT("Parsing HCL options\n");
 
+	/* get meta configuration data from file */
+	if (read_file_contents(meta_cfg_fpath, &meta_cfg) == 0) {
+		mcfg_set_err("Could not read meta configuration from '%s'", meta_cfg_fpath);
+		return -1;
+	}
+
+
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
 	if (!parser) {
 		mcfg_set_err("Could not create UCL parser");
+		free(meta_cfg);
 		return -1;
 	}
-	ucl_parser_add_chunk(parser, (const unsigned char*)hcl, strlen(hcl));
+	ucl_parser_add_chunk(parser, (const unsigned char*)meta_cfg, strlen(meta_cfg));
+	free(meta_cfg);
 
 	if (ucl_parser_get_error(parser) != NULL) {
 		mcfg_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
@@ -296,7 +307,7 @@ int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, 
 	}
 
 	/* parse HCL options */
-	ret = parse_hcl_options(obj, hcl_opts, hcl_opts_count);
+	ret = parse_meta_options(obj, meta_opts, meta_opts_count);
 
 	/* free object and parser */
 	ucl_object_unref(obj);
@@ -309,12 +320,12 @@ int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, 
  * free HCL options
  */
 
-void mcfg_free_hcl_options(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count)
+void mcfg_free_meta_options(struct mcfg_meta_options *meta_opts, int meta_opts_count)
 {
 	int i;
 
-	for (i = 0; i < hcl_opts_count; i++) {
-		struct mcfg_hcl_options *opt = &hcl_opts[i];
+	for (i = 0; i < meta_opts_count; i++) {
+		struct mcfg_meta_options *opt = &meta_opts[i];
 
 		if (opt->cfg_type == MCFG_TYPE_STRING || opt->cfg_type == MCFG_TYPE_IPPORT) {
 			if (opt->cfg_data.str)
@@ -322,5 +333,5 @@ void mcfg_free_hcl_options(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count
 		}
 	}
 
-	free(hcl_opts);
+	free(meta_opts);
 }
