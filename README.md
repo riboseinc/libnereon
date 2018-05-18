@@ -1,7 +1,7 @@
 
 # Multi-configuration parser library using C
 
-`libmulticonfig` is a multi-configuration parser library implemented in C.</br>
+`libnereon` is a multi-configuration parser library implemented in C.</br>
 The configuration for the library is parsed in this order:
 
  * The command-line arguments.
@@ -10,7 +10,7 @@ The configuration for the library is parsed in this order:
 
 This library uses [libucl](https://github.com/vstakhov/libucl).
 
-## HCL options for libmulticonfig
+## HCL options for libnereon
 
 HCL options have configuration model to specify command-line arguments, environment variables and configuration fields.</br>
 Here is an example:
@@ -73,6 +73,6 @@ help {
  * `config`: the keyword to specify an field in configuration file.</br>
  * `helper`: the flag to print help message.</br>
 
-## libmulticonfig API functions
+## libnereon API functions
 
-All API functions are defined in [mconfig.h](https://github.com/riboseinc/libmulticonfig/blob/master/src/mconfig.h).
+All API functions are defined in [mconfig.h](https://github.com/riboseinc/libnereon/blob/master/src/mconfig.h).
