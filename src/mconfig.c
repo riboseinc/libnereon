@@ -33,7 +33,7 @@
 
 #include "common.h"
 
-#include "hcl.h"
+#include "meta.h"
 #include "cmdline.h"
 #include "err.h"
 #include "util.h"
@@ -45,23 +45,35 @@
  * Intiialize multiconfig context object
  */
 
-int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options)
+int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath)
 {
-	struct mcfg_hcl_options *mcfg_opts = NULL;
-	int mcfg_opts_count = 0;
+	struct mcfg_meta_options *meta_opts = NULL;
+	int meta_opts_count = 0;
 
-	DEBUG_PRINT("Initializing multiconfig\n");
+	struct mcfg_cfg_options *cfg_opts = NULL;
+
+	DEBUG_PRINT("Initializing multiconfig with prog_cfg:%s and meta_cfg:%s\n",
+			prog_cfg_fpath, meta_cfg_fpath);
 
 	memset(mctx, 0, sizeof(mconfig_ctx_t));
 
-	/* parse HCL options */
-	if (mcfg_parse_hcl_options(hcl_options, &mcfg_opts, &mcfg_opts_count) != 0) {
-		DEBUG_PRINT("Failed to parse HCL options(err:%s)\n", mcfg_get_err());
+	/* parse meta options */
+	if (meta_cfg_fpath && mcfg_parse_meta_options(meta_cfg_fpath, &meta_opts, &meta_opts_count) != 0) {
+		DEBUG_PRINT("Failed to parse meta options(err:%s)\n", mcfg_get_err());
 		return -1;
 	}
 
-	mctx->hcl_opts = (void *)mcfg_opts;
-	mctx->hcl_opts_count = mcfg_opts_count;
+	/* parse configuration options */
+	if (prog_cfg_fpath && mcfg_parse_cfg_options(prog_cfg_fpath, &cfg_opts) != 0) {
+		DEBUG_PRINT("Faild to parse configuration options(err:%s)\n", mcfg_get_err());
+		mcfg_free_meta_options(meta_opts, meta_opts_count);
+		return -1;
+	}
+
+	mctx->meta_opts = (void *)meta_opts;
+	mctx->meta_opts_count = meta_opts_count;
+
+	mctx->cfg_opts = cfg_opts;
 
 	return 0;
 }
@@ -72,11 +84,11 @@ int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options)
 
 void mconfig_ctx_finalize(mconfig_ctx_t *mctx)
 {
-	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+	struct mcfg_meta_options *meta_opts = (struct mcfg_meta_options *)mctx->meta_opts;
 	struct mcfg_cfg_options *cfg_opts = (struct mcfg_cfg_options *)mctx->cfg_opts;
 
-	mconfig_free_cfg_options(cfg_opts);
-	mcfg_free_hcl_options(hcl_opts, mctx->hcl_opts_count);
+	mcfg_free_cfg_options(cfg_opts);
+	mcfg_free_meta_options(meta_opts, mctx->meta_opts_count);
 }
 
 /*
@@ -98,7 +110,7 @@ int mconfig_parse_config(mconfig_ctx_t *mctx, const char *cfg_fpath)
 		return -1;
 	}
 
-	ret = mconfig_parse_cfg_options(cfg_hcl, &cfg_opt);
+	ret = mcfg_parse_cfg_options(cfg_hcl, &cfg_opt);
 	if (ret == 0) {
 		mctx->cfg_opts = (void *)cfg_opt;
 	}
@@ -113,9 +125,9 @@ int mconfig_parse_config(mconfig_ctx_t *mctx, const char *cfg_fpath)
 
 int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv)
 {
-	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+	struct mcfg_meta_options *meta_opts = (struct mcfg_meta_options *)mctx->meta_opts;
 
-	return mcfg_parse_cmdline(hcl_opts, mctx->hcl_opts_count, argc, argv);
+	return mcfg_parse_cmdline(meta_opts, mctx->meta_opts_count, argc, argv);
 }
 
 /*
@@ -124,9 +136,9 @@ int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv)
 
 void mconfig_print_usage(mconfig_ctx_t *mctx)
 {
-	struct mcfg_hcl_options *hcl_opts = (struct mcfg_hcl_options *)mctx->hcl_opts;
+	struct mcfg_meta_options *meta_opts = (struct mcfg_meta_options *)mctx->meta_opts;
 
-	mcfg_print_cmdline_usage(hcl_opts, mctx->hcl_opts_count);
+	mcfg_print_cmdline_usage(meta_opts, mctx->meta_opts_count);
 }
 
 /*

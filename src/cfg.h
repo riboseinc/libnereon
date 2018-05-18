@@ -19,12 +19,12 @@ struct mcfg_cfg_options {
  * parse configuration options
  */
 
-int mconfig_parse_cfg_options(const char *cfg_hcl, struct mcfg_cfg_options **cfg_opts);
+int mcfg_parse_cfg_options(const char *cfg_fpath, struct mcfg_cfg_options **cfg_opts);
 
 /*
  * free configuration options
  */
 
-void mconfig_free_cfg_options(struct mcfg_cfg_options *cfg_opts);
+void mcfg_free_cfg_options(struct mcfg_cfg_options *cfg_opts);
 
 #endif /* __MCONFIG_CFG_H__ */

@@ -6,8 +6,8 @@
  */
 
 typedef struct mconfig_ctx {
-	void *hcl_opts;
-	int hcl_opts_count;
+	void *meta_opts;
+	int meta_opts_count;
 
 	void *cfg_opts;
 } mconfig_ctx_t;
@@ -16,7 +16,7 @@ typedef struct mconfig_ctx {
  * Initialize multiconfig context object
  */
 
-int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *hcl_options);
+int mconfig_ctx_init(mconfig_ctx_t *mctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath);
 
 /*
  * Finalize multiconfig context object
@@ -29,12 +29,6 @@ void mconfig_ctx_finalize(mconfig_ctx_t *mctx);
  */
 
 int mconfig_parse_cmdline(mconfig_ctx_t *mctx, int argc, char **argv);
-
-/*
- * Parse configuration file
- */
-
-int mconfig_parse_config(mconfig_ctx_t *mctx, const char *cfg_fpath);
 
 /*
  * Print multiconfig command line usage

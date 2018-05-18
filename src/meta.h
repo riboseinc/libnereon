@@ -5,7 +5,7 @@
  * multiconfig HCL options
  */
 
-struct mcfg_hcl_options {
+struct mcfg_meta_options {
 	char cfg_name[CFG_MAX_NAME];
 	enum MCFG_TYPE cfg_type;
 
@@ -27,12 +27,12 @@ struct mcfg_hcl_options {
  * parse multiconfig HCL options
  */
 
-int mcfg_parse_hcl_options(const char *hcl, struct mcfg_hcl_options **hcl_opts, int *hcl_opts_count);
+int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options **meta_opts, int *meta_opts_count);
 
 /*
  * free HCL options
  */
 
-void mcfg_free_hcl_options(struct mcfg_hcl_options *hcl_opts, int hcl_opts_count);
+void mcfg_free_meta_options(struct mcfg_meta_options *meta_opts, int meta_opts_count);
 
 #endif /* __MCONFIG_HCL_H__ */

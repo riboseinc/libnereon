@@ -227,24 +227,33 @@ int parse_config_options(const ucl_object_t *obj, struct mcfg_cfg_options *paren
  * parse configuration options
  */
 
-int mconfig_parse_cfg_options(const char *cfg_hcl, struct mcfg_cfg_options **cfg_opts)
+int mcfg_parse_cfg_options(const char *cfg_fpath, struct mcfg_cfg_options **cfg_opts)
 {
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
 
+	char *cfg_str;
 	struct mcfg_cfg_options *root_opt = NULL;
 
 	int ret = -1;
 
 	DEBUG_PRINT("Parsing configuration options\n");
 
+	/* get configuration contents from file */
+	if (read_file_contents(cfg_fpath, &cfg_str) == 0) {
+		mcfg_set_err("Could not read configuration from '%s'", cfg_fpath);
+		return -1;
+	}
+
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
 	if (!parser) {
 		mcfg_set_err("Could not create UCL parser");
+		free(cfg_str);
 		return -1;
 	}
-	ucl_parser_add_chunk(parser, (const unsigned char*)cfg_hcl, strlen(cfg_hcl));
+	ucl_parser_add_chunk(parser, (const unsigned char*)cfg_str, strlen(cfg_str));
+	free(cfg_str);
 
 	if (ucl_parser_get_error(parser) != NULL) {
 		mcfg_set_err("Failed to parse configuration options(%s)", ucl_parser_get_error(parser));
@@ -287,7 +296,7 @@ end:
  * free configuration options
  */
 
-void mconfig_free_cfg_options(struct mcfg_cfg_options *cfg_opts)
+void mcfg_free_cfg_options(struct mcfg_cfg_options *cfg_opts)
 {
 	free_config_options(cfg_opts);
 }
