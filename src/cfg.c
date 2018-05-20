@@ -37,6 +37,7 @@
 #include "common.h"
 #include "err.h"
 #include "util.h"
+#include "meta.h"
 
 #include "cfg.h"
 
@@ -299,4 +300,13 @@ end:
 void mcfg_free_cfg_options(struct mcfg_cfg_options *cfg_opts)
 {
 	free_config_options(cfg_opts);
+}
+
+/*
+ * merge configuration options
+ */
+
+int mcfg_merge_cfg_options(struct mcfg_cfg_options *cfg_opts, struct mcfg_meta_options *meta_opts, int meta_opts_count)
+{
+	return 0;
 }

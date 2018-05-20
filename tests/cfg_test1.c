@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 
 #include "test_util.h"
-#include "mconfig.h"
+#include "nereon.h"
 
 #define TEST_CMDLINE_HCL                 "tests/cmdline.hcl"
 #define TEST_CONFIG_HCL                  "tests/cfg.hcl"
@@ -41,18 +41,18 @@
 
 int main(int argc, char *argv[])
 {
-	mconfig_ctx_t mctx;
+	nereon_ctx_t mctx;
 	int ret;
 
-	/* initialize multiconfig context */
-	ret = mconfig_ctx_init(&mctx, TEST_CONFIG_HCL, TEST_CMDLINE_HCL);
+	/* initialize nereon context */
+	ret = nereon_ctx_init(&mctx, TEST_CONFIG_HCL, TEST_CMDLINE_HCL);
 	if (ret != 0) {
-		fprintf(stderr, "Could not initialize multiconfig context(err:%s)\n", mconfig_get_errmsg());
+		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		return -1;
 	}
 
-	/* finalize multiconfig context */
-	mconfig_ctx_finalize(&mctx);
+	/* finalize nereon context */
+	nereon_ctx_finalize(&mctx);
 
 	return ret;
 }
