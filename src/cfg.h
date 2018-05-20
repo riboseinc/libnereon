@@ -27,4 +27,10 @@ int mcfg_parse_cfg_options(const char *cfg_fpath, struct mcfg_cfg_options **cfg_
 
 void mcfg_free_cfg_options(struct mcfg_cfg_options *cfg_opts);
 
+/*
+ * merge configuration options
+ */
+
+int mcfg_merge_cfg_options(struct mcfg_cfg_options *cfg_opts, struct mcfg_meta_options *meta_opts, int meta_opts_count);
+
 #endif /* __MCONFIG_CFG_H__ */

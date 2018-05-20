@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 #include <ucl.h>
 
-#include "mconfig.h"
+#include "nereon.h"
 #include "test_util.h"
 
 #define TEST_CFG_HCL                  "tests/cfg.hcl"
