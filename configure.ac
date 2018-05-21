@@ -1,10 +1,10 @@
 
 AC_PREREQ([2.69])
-AC_INIT([libnereon], [0.9.0.3], [https://www.ribose.com])
+AC_INIT([libnereon], [0.9.0.4], [https://www.ribose.com])
 AM_INIT_AUTOMAKE([foreign subdir-objects -Wall])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([src/mconfig.c])
+AC_CONFIG_SRCDIR([src/nereon.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.

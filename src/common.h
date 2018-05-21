@@ -1,5 +1,5 @@
-#ifndef __MCONFIG_COMMON_H__
-#define __MCONFIG_COMMON_H__
+#ifndef __NEREON_COMMON_H__
+#define __NEREON_COMMON_H__
 
 #include <stdbool.h>
 
@@ -16,15 +16,15 @@
  * multiconfig configuration types
  */
 
-enum MCFG_TYPE {
-	MCFG_TYPE_INT = 0,
-	MCFG_TYPE_BOOL,
-	MCFG_TYPE_STRING,
-	MCFG_TYPE_ARRAY,
-	MCFG_TYPE_IPPORT,
-	MCFG_TYPE_FLOAT,
-	MCFG_TYPE_OBJECT,
-	MCFG_TYPE_UNKNOWN
+enum NEREON_TYPE {
+	NEREON_TYPE_INT = 0,
+	NEREON_TYPE_BOOL,
+	NEREON_TYPE_STRING,
+	NEREON_TYPE_ARRAY,
+	NEREON_TYPE_IPPORT,
+	NEREON_TYPE_FLOAT,
+	NEREON_TYPE_OBJECT,
+	NEREON_TYPE_UNKNOWN
 };
 
 /*
@@ -38,4 +38,4 @@ union _cfg_data {
 	double d;
 };
 
-#endif /* __MCONFIG_COMMON_H__ */
+#endif /* __NEREON_COMMON_H__ */

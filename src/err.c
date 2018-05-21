@@ -41,7 +41,7 @@ static char err_msg[CFG_MAX_ERR_MSG];
  * set error string
  */
 
-void mcfg_set_err(const char *err_fmt, ...)
+void nereon_set_err(const char *err_fmt, ...)
 {
 	va_list va_args;
 
@@ -69,7 +69,7 @@ void mcfg_set_err(const char *err_fmt, ...)
  * get error string
  */
 
-const char *mcfg_get_err(void)
+const char *nereon_get_err(void)
 {
 	return err_msg;
 }

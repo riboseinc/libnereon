@@ -1,13 +1,13 @@
-#ifndef __MCONFIG_HCL_H__
-#define __MCONFIG_HCL_H__
+#ifndef __NEREON_META_H__
+#define __NEREON_META_H__
 
 /*
  * multiconfig HCL options
  */
 
-struct mcfg_meta_options {
+struct nereon_meta_options {
 	char cfg_name[CFG_MAX_NAME];
-	enum MCFG_TYPE cfg_type;
+	enum NEREON_TYPE cfg_type;
 
 	bool helper;
 
@@ -27,12 +27,12 @@ struct mcfg_meta_options {
  * parse multiconfig HCL options
  */
 
-int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options **meta_opts, int *meta_opts_count);
+int nereon_parse_meta_options(const char *meta_cfg_fpath, struct nereon_meta_options **meta_opts, int *meta_opts_count);
 
 /*
  * free HCL options
  */
 
-void mcfg_free_meta_options(struct mcfg_meta_options *meta_opts, int meta_opts_count);
+void nereon_free_meta_options(struct nereon_meta_options *meta_opts, int meta_opts_count);
 
-#endif /* __MCONFIG_HCL_H__ */
+#endif /* __NEREON_META_H__ */
