@@ -1,16 +1,16 @@
-#ifndef __MCONFIG_CFG_H__
-#define __MCONFIG_CFG_H__
+#ifndef __NEREON_CFG_H__
+#define __NEREON_CFG_H__
 
 /*
  * multiconfig config HCL options
  */
 
-struct mcfg_cfg_options {
+struct nereon_cfg_options {
 	char cfg_key[CFG_MAX_KEY_NAME];
-	enum MCFG_TYPE cfg_type;
+	enum NEREON_TYPE cfg_type;
 
-	struct mcfg_cfg_options *childs;
-	struct mcfg_cfg_options *next;
+	struct nereon_cfg_options *childs;
+	struct nereon_cfg_options *next;
 
 	union _cfg_data cfg_data;
 };
@@ -19,18 +19,18 @@ struct mcfg_cfg_options {
  * parse configuration options
  */
 
-int mcfg_parse_cfg_options(const char *cfg_fpath, struct mcfg_cfg_options **cfg_opts);
+int nereon_parse_cfg_options(const char *cfg_fpath, struct nereon_cfg_options **cfg_opts);
 
 /*
  * free configuration options
  */
 
-void mcfg_free_cfg_options(struct mcfg_cfg_options *cfg_opts);
+void nereon_free_cfg_options(struct nereon_cfg_options *cfg_opts);
 
 /*
  * merge configuration options
  */
 
-int mcfg_merge_cfg_options(struct mcfg_cfg_options *cfg_opts, struct mcfg_meta_options *meta_opts, int meta_opts_count);
+int nereon_merge_cfg_options(struct nereon_cfg_options *cfg_opts, struct nereon_meta_options *meta_opts, int meta_opts_count);
 
-#endif /* __MCONFIG_CFG_H__ */
+#endif /* __NEREON_CFG_H__ */

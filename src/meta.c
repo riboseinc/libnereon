@@ -42,20 +42,20 @@
  * parse option types
  */
 
-static enum MCFG_TYPE parse_opt_type(const char *type_str)
+static enum NEREON_TYPE parse_opt_type(const char *type_str)
 {
-	enum MCFG_TYPE cfg_type = MCFG_TYPE_UNKNOWN;
+	enum NEREON_TYPE cfg_type = NEREON_TYPE_UNKNOWN;
 
 	if (strcmp(type_str, "string") == 0)
-		cfg_type = MCFG_TYPE_STRING;
+		cfg_type = NEREON_TYPE_STRING;
 	else if (strcmp(type_str, "int") == 0)
-		cfg_type = MCFG_TYPE_INT;
+		cfg_type = NEREON_TYPE_INT;
 	else if (strcmp(type_str, "array") == 0)
-		cfg_type = MCFG_TYPE_ARRAY;
+		cfg_type = NEREON_TYPE_ARRAY;
 	else if (strcmp(type_str, "ipport") == 0)
-		cfg_type = MCFG_TYPE_IPPORT;
+		cfg_type = NEREON_TYPE_IPPORT;
 	else if (strcmp(type_str, "bool") == 0)
-		cfg_type = MCFG_TYPE_BOOL;
+		cfg_type = NEREON_TYPE_BOOL;
 
 	return cfg_type;
 }
@@ -64,7 +64,7 @@ static enum MCFG_TYPE parse_opt_type(const char *type_str)
  * parse switch options
  */
 
-static int parse_switch_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
+static int parse_switch_options(const ucl_object_t *obj, struct nereon_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -89,7 +89,7 @@ static int parse_switch_options(const ucl_object_t *obj, struct mcfg_meta_option
  * parse description options
  */
 
-static int parse_desc_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
+static int parse_desc_options(const ucl_object_t *obj, struct nereon_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -112,7 +112,7 @@ static int parse_desc_options(const ucl_object_t *obj, struct mcfg_meta_options 
  * parse cmdline options
  */
 
-static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
+static int parse_cmdline_options(const ucl_object_t *obj, struct nereon_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -137,7 +137,7 @@ static int parse_cmdline_options(const ucl_object_t *obj, struct mcfg_meta_optio
  * parse options
  */
 
-static int parse_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
+static int parse_options(const ucl_object_t *obj, struct nereon_meta_options *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -149,17 +149,17 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 	/* get type */
 	sub_obj = ucl_object_lookup(obj, "type");
 	if (!sub_obj || sub_obj->type != UCL_STRING) {
-		mcfg_set_err("Could not find 'type' key for config '%s'", opt->cfg_name);
+		nereon_set_err("Could not find 'type' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	opt->cfg_type = parse_opt_type(ucl_object_tostring(sub_obj));
-	if (opt->cfg_type == MCFG_TYPE_UNKNOWN) {
-		mcfg_set_err("Invalid configuration type '%s' for config '%s'", ucl_object_tostring(sub_obj), opt->cfg_name);
+	if (opt->cfg_type == NEREON_TYPE_UNKNOWN) {
+		nereon_set_err("Invalid configuration type '%s' for config '%s'", ucl_object_tostring(sub_obj), opt->cfg_name);
 		return -1;
 	}
 
-	if (opt->cfg_type == MCFG_TYPE_BOOL) {
+	if (opt->cfg_type == NEREON_TYPE_BOOL) {
 		sub_obj = ucl_object_lookup(obj, "helper");
 		if (sub_obj && sub_obj->type == UCL_BOOLEAN) {
 			opt->helper = ucl_object_toboolean(sub_obj);
@@ -169,12 +169,12 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "cmdline");
 	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		mcfg_set_err("Could not find 'cmdline' key for config '%s'", opt->cfg_name);
+		nereon_set_err("Could not find 'cmdline' key for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
 	if (parse_cmdline_options(sub_obj, opt) != 0) {
-		mcfg_set_err("Invalid cmdline option for config '%s'", opt->cfg_name);
+		nereon_set_err("Invalid cmdline option for config '%s'", opt->cfg_name);
 		return -1;
 	}
 
@@ -197,7 +197,7 @@ static int parse_options(const ucl_object_t *obj, struct mcfg_meta_options *opt)
  * parse cmdline options
  */
 
-static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
+static int parse_nereon_options(const ucl_object_t *obj, struct nereon_meta_options **meta_opts, int *meta_opts_count)
 {
 	const ucl_object_t *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
@@ -206,19 +206,19 @@ static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_meta_options 
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false)) && ret == 0) {
-		struct mcfg_meta_options opt;
+		struct nereon_meta_options opt;
 
-		DEBUG_PRINT("parse_mcfg_options() key:%s\n", obj->key);
+		DEBUG_PRINT("parse_nereon_options() key:%s\n", obj->key);
 
-		memset(&opt, 0, sizeof(struct mcfg_meta_options));
+		memset(&opt, 0, sizeof(struct nereon_meta_options));
 		if (parse_options(obj, &opt) == 0) {
-			*meta_opts = (struct mcfg_meta_options *)realloc(*meta_opts,
-						(*meta_opts_count + 1) * sizeof(struct mcfg_meta_options));
+			*meta_opts = (struct nereon_meta_options *)realloc(*meta_opts,
+						(*meta_opts_count + 1) * sizeof(struct nereon_meta_options));
 			if (*meta_opts == NULL) {
-				mcfg_set_err("Out of memory!");
+				nereon_set_err("Out of memory!");
 				ret = -1;
 			} else {
-				memcpy(&(*meta_opts)[*meta_opts_count], &opt, sizeof(struct mcfg_meta_options));
+				memcpy(&(*meta_opts)[*meta_opts_count], &opt, sizeof(struct nereon_meta_options));
 				(*meta_opts_count)++;
 			}
 		} else {
@@ -236,12 +236,12 @@ static int parse_mcfg_options(const ucl_object_t *obj, struct mcfg_meta_options 
  * parse HCL options
  */
 
-static int parse_meta_options(const ucl_object_t *obj, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
+static int parse_meta_options(const ucl_object_t *obj, struct nereon_meta_options **meta_opts, int *meta_opts_count)
 {
 	const ucl_object_t *tmp, *cur;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
-	struct mcfg_meta_options *opt;
+	struct nereon_meta_options *opt;
 
 	int ret = 0;
 
@@ -250,7 +250,7 @@ static int parse_meta_options(const ucl_object_t *obj, struct mcfg_meta_options 
 		if (obj->type == UCL_OBJECT) {
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-				ret = parse_mcfg_options(cur, meta_opts, meta_opts_count);
+				ret = parse_nereon_options(cur, meta_opts, meta_opts_count);
 			}
 		} else
 			ret = -1;
@@ -263,7 +263,7 @@ static int parse_meta_options(const ucl_object_t *obj, struct mcfg_meta_options 
  * parse HCL options
  */
 
-int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options **meta_opts, int *meta_opts_count)
+int nereon_parse_meta_options(const char *meta_cfg_fpath, struct nereon_meta_options **meta_opts, int *meta_opts_count)
 {
 	char *meta_cfg;
 
@@ -276,7 +276,7 @@ int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options
 
 	/* get meta configuration data from file */
 	if (read_file_contents(meta_cfg_fpath, &meta_cfg) == 0) {
-		mcfg_set_err("Could not read meta configuration from '%s'", meta_cfg_fpath);
+		nereon_set_err("Could not read meta configuration from '%s'", meta_cfg_fpath);
 		return -1;
 	}
 
@@ -284,7 +284,7 @@ int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
 	if (!parser) {
-		mcfg_set_err("Could not create UCL parser");
+		nereon_set_err("Could not create UCL parser");
 		free(meta_cfg);
 		return -1;
 	}
@@ -292,7 +292,7 @@ int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options
 	free(meta_cfg);
 
 	if (ucl_parser_get_error(parser) != NULL) {
-		mcfg_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
+		nereon_set_err("Failed to parse HCL options(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;
@@ -300,7 +300,7 @@ int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options
 
 	obj = ucl_parser_get_object(parser);
 	if (!obj) {
-		mcfg_set_err("Failed to get HCL object(%s)", ucl_parser_get_error(parser));
+		nereon_set_err("Failed to get HCL object(%s)", ucl_parser_get_error(parser));
 		ucl_parser_free(parser);
 
 		return -1;
@@ -320,14 +320,14 @@ int mcfg_parse_meta_options(const char *meta_cfg_fpath, struct mcfg_meta_options
  * free HCL options
  */
 
-void mcfg_free_meta_options(struct mcfg_meta_options *meta_opts, int meta_opts_count)
+void nereon_free_meta_options(struct nereon_meta_options *meta_opts, int meta_opts_count)
 {
 	int i;
 
 	for (i = 0; i < meta_opts_count; i++) {
-		struct mcfg_meta_options *opt = &meta_opts[i];
+		struct nereon_meta_options *opt = &meta_opts[i];
 
-		if (opt->cfg_type == MCFG_TYPE_STRING || opt->cfg_type == MCFG_TYPE_IPPORT) {
+		if (opt->cfg_type == NEREON_TYPE_STRING || opt->cfg_type == NEREON_TYPE_IPPORT) {
 			if (opt->cfg_data.str)
 				free(opt->cfg_data.str);
 		}

@@ -1,5 +1,5 @@
-#ifndef __MCONFIG_H__
-#define __MCONFIG_H__
+#ifndef __NEREON_H__
+#define __NEREON_H__
 
 /*
  * libnereon context structure
@@ -48,4 +48,4 @@ void nereon_get_config_option(nereon_ctx_t *mctx, const char *opt_key, void **op
 
 const char *nereon_get_errmsg(void);
 
-#endif /* __MCONFIG_H__ */
+#endif /* __NEREON_H__ */
