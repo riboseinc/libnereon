@@ -29,7 +29,6 @@
 
 #include <sys/stat.h>
 
-#include "test_util.h"
 #include "nereon.h"
 
 #define TEST_CMDLINE_HCL                 "tests/cmdline.hcl"
@@ -41,18 +40,18 @@
 
 int main(int argc, char *argv[])
 {
-	nereon_ctx_t mctx;
+	nereon_ctx_t ctx;
 	int ret;
 
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&mctx, TEST_CONFIG_HCL, TEST_CMDLINE_HCL);
+	ret = nereon_ctx_init(&ctx, TEST_CONFIG_HCL, TEST_CMDLINE_HCL);
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		return -1;
 	}
 
 	/* finalize nereon context */
-	nereon_ctx_finalize(&mctx);
+	nereon_ctx_finalize(&ctx);
 
 	return ret;
 }

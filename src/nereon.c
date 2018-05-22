@@ -32,20 +32,19 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "err.h"
+#include "util.h"
+#include "nereon.h"
 
 #include "meta.h"
 #include "cmdline.h"
-#include "err.h"
-#include "util.h"
 #include "cfg.h"
-
-#include "nereon.h"
 
 /*
  * Intiialize libnereon context object
  */
 
-int nereon_ctx_init(nereon_ctx_t *mctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath)
+int nereon_ctx_init(nereon_ctx_t *ctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath)
 {
 	struct nereon_meta_options *meta_opts = NULL;
 	int meta_opts_count = 0;
@@ -55,7 +54,7 @@ int nereon_ctx_init(nereon_ctx_t *mctx, const char *prog_cfg_fpath, const char *
 	DEBUG_PRINT("Initializing libnereon context with prog_cfg:%s and meta_cfg:%s\n",
 			prog_cfg_fpath, meta_cfg_fpath);
 
-	memset(mctx, 0, sizeof(nereon_ctx_t));
+	memset(ctx, 0, sizeof(nereon_ctx_t));
 
 	/* parse meta options */
 	if (meta_cfg_fpath && nereon_parse_meta_options(meta_cfg_fpath, &meta_opts, &meta_opts_count) != 0) {
@@ -66,21 +65,14 @@ int nereon_ctx_init(nereon_ctx_t *mctx, const char *prog_cfg_fpath, const char *
 	/* parse configuration options */
 	if (prog_cfg_fpath && nereon_parse_cfg_options(prog_cfg_fpath, &cfg_opts) != 0) {
 		DEBUG_PRINT("Faild to parse configuration options(err:%s)\n", nereon_get_err());
-		nereon_ctx_finalize(mctx);
+		nereon_ctx_finalize(ctx);
 		return -1;
 	}
 
-	/* merge config with metaconfig */
-	if (cfg_opts && nereon_merge_cfg_options(cfg_opts, meta_opts, meta_opts_count) != 0) {
-		DEBUG_PRINT("Failed to merge config with metaconfig(err:%s)\n", nereon_get_err());
-		nereon_ctx_finalize(mctx);
-		return -1;
-	}
+	ctx->meta_opts = (void *)meta_opts;
+	ctx->meta_opts_count = meta_opts_count;
 
-	mctx->meta_opts = (void *)meta_opts;
-	mctx->meta_opts_count = meta_opts_count;
-
-	mctx->cfg_opts = cfg_opts;
+	ctx->cfg_opts = cfg_opts;
 
 	return 0;
 }
@@ -89,20 +81,20 @@ int nereon_ctx_init(nereon_ctx_t *mctx, const char *prog_cfg_fpath, const char *
  * Finalize libnereon context object
  */
 
-void nereon_ctx_finalize(nereon_ctx_t *mctx)
+void nereon_ctx_finalize(nereon_ctx_t *ctx)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)mctx->meta_opts;
-	struct nereon_cfg_options *cfg_opts = (struct nereon_cfg_options *)mctx->cfg_opts;
+	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
+	struct nereon_cfg_options *cfg_opts = (struct nereon_cfg_options *)ctx->cfg_opts;
 
 	nereon_free_cfg_options(cfg_opts);
-	nereon_free_meta_options(meta_opts, mctx->meta_opts_count);
+	nereon_free_meta_options(meta_opts, ctx->meta_opts_count);
 }
 
 /*
  * Parse configuration file
  */
 
-int nereon_parse_config(nereon_ctx_t *mctx, const char *cfg_fpath)
+int nereon_parse_config(nereon_ctx_t *ctx, const char *cfg_fpath)
 {
 	struct nereon_cfg_options *cfg_opt = NULL;
 	char *cfg_hcl = NULL;
@@ -119,7 +111,7 @@ int nereon_parse_config(nereon_ctx_t *mctx, const char *cfg_fpath)
 
 	ret = nereon_parse_cfg_options(cfg_hcl, &cfg_opt);
 	if (ret == 0) {
-		mctx->cfg_opts = (void *)cfg_opt;
+		ctx->cfg_opts = (void *)cfg_opt;
 	}
 	free(cfg_hcl);
 
@@ -130,31 +122,33 @@ int nereon_parse_config(nereon_ctx_t *mctx, const char *cfg_fpath)
  * get configuration option
  */
 
-void nereon_get_config_option(nereon_ctx_t *mctx, const char *opt_key, void **opt_val)
+int nereon_get_config_option(nereon_ctx_t *ctx, const char *key, void *val)
 {
-	
+	/* get configuration */
+
+	return 0;
 }
 
 /*
  * Parse command line arguments
  */
 
-int nereon_parse_cmdline(nereon_ctx_t *mctx, int argc, char **argv)
+int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)mctx->meta_opts;
+	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
 
-	return nereon_cli_parse(meta_opts, mctx->meta_opts_count, argc, argv);
+	return nereon_cli_parse(meta_opts, ctx->meta_opts_count, argc, argv);
 }
 
 /*
  * Print command line usage message
  */
 
-void nereon_print_usage(nereon_ctx_t *mctx)
+void nereon_print_usage(nereon_ctx_t *ctx)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)mctx->meta_opts;
+	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
 
-	nereon_cli_print_usage(meta_opts, mctx->meta_opts_count);
+	nereon_cli_print_usage(meta_opts, ctx->meta_opts_count);
 }
 
 /*

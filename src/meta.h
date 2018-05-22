@@ -7,7 +7,7 @@
 
 struct nereon_meta_options {
 	char cfg_name[CFG_MAX_NAME];
-	enum NEREON_TYPE cfg_type;
+	enum NEREON_CONFIG_TYPE cfg_type;
 
 	bool helper;
 
@@ -20,7 +20,7 @@ struct nereon_meta_options {
 	char cfg_env[CFG_MAX_ENV_NAME];
 	char cfg_key[CFG_MAX_KEY_NAME];
 
-	union _cfg_data cfg_data;
+	union nereon_config_data cfg_data;
 };
 
 /*

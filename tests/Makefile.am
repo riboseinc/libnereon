@@ -4,17 +4,17 @@ test_common_ldflags = -L$(top_srcdir)/src/.libs
 
 bin_PROGRAMS = cli_test ucl_test cfg_test cfg_test1
 
-cli_test_SOURCES = cli_test.c test_util.c
+cli_test_SOURCES = cli_test.c
 cli_test_CFLAGS = $(test_common_cflags)
 cli_test_LDADD = -lnereon
 cli_test_LDFLAGS = $(test_common_ldflags)
 
-ucl_test_SOURCES = ucl_test.c test_util.c
+ucl_test_SOURCES = ucl_test.c
 ucl_test_CFLAGS = $(test_common_cflags)
 ucl_test_LDADD = $(LIBUCL_LDADD)
 ucl_test_LDFLAGS = $(LIBUCL_LDFLAGS)
 
-cfg_test_SOURCES = cfg_test.c test_util.c
+cfg_test_SOURCES = cfg_test.c
 cfg_test_CFLAGS = $(test_common_cflags)
 cfg_test_LDADD = $(LIBUCL_LDADD)
 cfg_test_LDFLAGS = $(LIBUCL_LDFLAGS)

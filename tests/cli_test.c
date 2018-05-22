@@ -29,7 +29,6 @@
 
 #include <sys/stat.h>
 
-#include "test_util.h"
 #include "nereon.h"
 
 #define TEST_CMDLINE_HCL                 "tests/cmdline.hcl"
@@ -40,24 +39,24 @@
 
 int main(int argc, char *argv[])
 {
-	nereon_ctx_t mctx;
+	nereon_ctx_t ctx;
 	int ret;
 
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&mctx, TEST_CMDLINE_HCL, NULL);
+	ret = nereon_ctx_init(&ctx, TEST_CMDLINE_HCL, NULL);
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		return -1;
 	}
 
 	/* print command line usage */
-	if (nereon_parse_cmdline(&mctx, argc, argv) != 0) {
+	if (nereon_parse_cmdline(&ctx, argc, argv) != 0) {
 		fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
-		nereon_print_usage(&mctx);
+		nereon_print_usage(&ctx);
 	}
 
 	/* finalize nereon context */
-	nereon_ctx_finalize(&mctx);
+	nereon_ctx_finalize(&ctx);
 
 	return ret;
 }

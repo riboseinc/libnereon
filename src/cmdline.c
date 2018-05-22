@@ -39,6 +39,7 @@
 #include "err.h"
 #include "util.h"
 
+#include "nereon.h"
 #include "meta.h"
 
 /*
