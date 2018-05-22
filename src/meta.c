@@ -35,6 +35,7 @@
 #include "common.h"
 #include "err.h"
 #include "util.h"
+#include "nereon.h"
 
 #include "meta.h"
 
@@ -42,9 +43,9 @@
  * parse option types
  */
 
-static enum NEREON_TYPE parse_opt_type(const char *type_str)
+static enum NEREON_CONFIG_TYPE parse_opt_type(const char *type_str)
 {
-	enum NEREON_TYPE cfg_type = NEREON_TYPE_UNKNOWN;
+	enum NEREON_CONFIG_TYPE cfg_type = NEREON_TYPE_UNKNOWN;
 
 	if (strcmp(type_str, "string") == 0)
 		cfg_type = NEREON_TYPE_STRING;

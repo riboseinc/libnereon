@@ -37,6 +37,7 @@
 #include "common.h"
 #include "err.h"
 #include "util.h"
+#include "nereon.h"
 #include "meta.h"
 
 #include "cfg.h"
@@ -69,7 +70,7 @@ static void free_config_options(struct nereon_cfg_options *cfg)
  * print config options
  */
 
-static const char *convert_to_str(enum NEREON_TYPE cfg_type, union _cfg_data *data)
+static const char *convert_to_str(enum NEREON_CONFIG_TYPE cfg_type, union nereon_config_data *data)
 {
 	static char str_data[512];
 
@@ -300,13 +301,4 @@ end:
 void nereon_free_cfg_options(struct nereon_cfg_options *cfg_opts)
 {
 	free_config_options(cfg_opts);
-}
-
-/*
- * merge configuration options
- */
-
-int nereon_merge_cfg_options(struct nereon_cfg_options *cfg_opts, struct nereon_meta_options *meta_opts, int meta_opts_count)
-{
-	return 0;
 }
