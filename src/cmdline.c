@@ -35,6 +35,11 @@
 #include <limits.h>
 #include <ucl.h>
 
+#if HAVE_LIBBSD
+#include <bsd/stdlib.h>
+#include <bsd/string.h>
+#endif
+
 #include "common.h"
 #include "err.h"
 #include "util.h"
