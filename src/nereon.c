@@ -37,7 +37,7 @@
 #include "nereon.h"
 
 #include "nos.h"
-#include "cmdline.h"
+#include "cli.h"
 #include "noc.h"
 
 /*

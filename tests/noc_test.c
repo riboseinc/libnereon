@@ -31,8 +31,6 @@
 
 #include "nereon.h"
 
-#define TEST_NOS_FILE                 "tests/cmdline.hcl"
-
 /*
  * read file contents
  */
@@ -78,9 +76,13 @@ int main(int argc, char *argv[])
 
 	char *nos_cfg;
 
-	/* read NOS configuration */
-	if (read_file_contents(TEST_NOS_FILE, &nos_cfg) == 0) {
-		fprintf(stderr, "Failed to read NOS configuration from '%s'\n", TEST_NOS_FILE);
+	if (argc != 2) {
+		fprintf(stderr, "%s <NOC file>\n", getprogname());
+		exit(1);
+	}
+
+	if (read_file_contents(argv[1], &nos_cfg) == 0) {
+		fprintf(stderr, "Failed to read NOS configuration from '%s'\n", argv[1]);
 		exit(1);
 	}
 
@@ -88,14 +90,6 @@ int main(int argc, char *argv[])
 	ret = nereon_ctx_init(&ctx, nos_cfg);
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
-		free(nos_cfg);
-		return -1;
-	}
-
-	/* print command line usage */
-	if (nereon_parse_cmdline(&ctx, argc, argv) != 0) {
-		fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
-		nereon_print_usage(&ctx);
 	}
 
 	/* finalize nereon context */

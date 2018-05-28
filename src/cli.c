@@ -42,6 +42,8 @@
 #include "nereon.h"
 #include "nos.h"
 
+#define CLI_LONG_OPT_PREFIX                    "|--"
+
 /*
  * show helper message
  */
@@ -68,19 +70,30 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
 		struct nereon_nos_options *opt = &nos_opts[i];
 
 		char *padding_sw, *padding_desc;
+		int padding_sw_len, padding_desc_len;
 
-		padding_sw = fill_bytes(' ', max_sw_len - strlen(opt->sw_long));
+		padding_sw_len = strlen(opt->sw_long) > 0 ? max_sw_len - strlen(opt->sw_long) :
+					max_sw_len + strlen(CLI_LONG_OPT_PREFIX) - 1;
+		padding_sw = fill_bytes(' ', padding_sw_len);
+
+		padding_desc_len = strlen(opt->desc_short) > 0 ? max_desc_len - strlen(opt->desc_short) :
+					max_sw_len + 1;
 		padding_desc = fill_bytes(' ', max_desc_len - strlen(opt->desc_short));
 
 		if (opt->type != NEREON_TYPE_BOOL) {
-			fprintf(stdout, "  -%s|--%s%s<%s>%s: %s\n",
+			fprintf(stdout, "  -%s%s%s%s%s%s%s%s: %s\n",
 				opt->sw_short,
+				strlen(opt->sw_long) > 0 ? CLI_LONG_OPT_PREFIX : " ",
 				opt->sw_long, padding_sw,
-				opt->desc_short, padding_desc,
+				strlen(opt->desc_short) > 0 ? "<" : " ",
+				opt->desc_short,
+				strlen(opt->desc_short) > 0 ? ">" : " ",
+				padding_desc,
 				opt->desc_long);
 		} else {
-			fprintf(stdout, "  -%s|--%s%s%s  : %s\n",
+			fprintf(stdout, "  -%s%s%s%s%s  : %s\n",
 				opt->sw_short,
+				strlen(opt->sw_long) > 0 ? CLI_LONG_OPT_PREFIX : " ",
 				opt->sw_long, padding_sw,
 				padding_desc,
 				opt->desc_long);
