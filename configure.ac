@@ -43,6 +43,7 @@ AC_CHECK_HEADERS_ONCE([endian.h sys/endian.h machine/endian.h])
 
 AC_CHECK_HEADERS_ONCE([ucl.h])
 
+AC_CHECK_FUNCS([strlcpy strlcat])
 AC_SEARCH_LIBS([getprogname], [bsd],
 [
     AC_DEFINE([HAVE_LIBBSD], [1], [Define if getprogname found in libbsd])
