@@ -23,11 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include <sys/stat.h>
+
+#if HAVE_LIBBSD
+#include <bsd/stdlib.h>
+#include <bsd/string.h>
+#endif
+
 #include <ucl.h>
 
 #include "nereon.h"

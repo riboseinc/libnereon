@@ -235,11 +235,14 @@ int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **n
 	ucl_object_t *obj = NULL;
 
 	char *cfg_str;
-	struct nereon_noc_options *root_opt = NULL;
+
+	struct nereon_cfg_options root_opt;
 
 	int ret = -1;
 
 	DEBUG_PRINT("Parsing configuration options\n");
+
+	memset(&root_opt, 0, sizeof(root_opt));
 
 	/* get configuration contents from file */
 	if (read_file_contents(cfg_path, &cfg_str) == 0) {
@@ -269,21 +272,16 @@ int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **n
 	}
 
 	/* parse HCL options */
-	root_opt = new_noc_option();
-	if (!root_opt)
-		goto end;
-
-	ret = parse_config_options(obj, root_opt);
+	ret = parse_config_options(obj, &root_opt);
 	if (ret == 0) {
-		*noc_opts = root_opt;
+		*cfg_opts = root_opt.childs;
 
 #ifdef DEBUG
-		print_config_options(root_opt, 0);
+		print_config_options(root_opt.childs, 0);
 #endif
 	} else {
-		free_config_options(root_opt);
+		free_config_options(root_opt.childs);
 	}
-
 end:
 	/* free object and parser */
 	if (obj)

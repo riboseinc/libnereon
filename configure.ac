@@ -43,7 +43,10 @@ AC_CHECK_HEADERS_ONCE([endian.h sys/endian.h machine/endian.h])
 
 AC_CHECK_HEADERS_ONCE([ucl.h])
 
-AC_CHECK_FUNCS([strlcpy strlcat])
+AC_SEARCH_LIBS([getprogname], [bsd],
+[
+    AC_DEFINE([HAVE_LIBBSD], [1], [Define if getprogname found in libbsd])
+])
 
 AC_ARG_WITH([ucl],
     [AS_HELP_STRING([--with-ucl=DIR],
@@ -57,12 +60,12 @@ AC_SUBST([LIBUCL_LDADD])
 
 AC_CHECK_HEADERS([ucl.h], [],
 [
-	AC_MSG_ERROR([Could not found libucl.h. Please specify libucl installation directory])
+	AC_MSG_ERROR([Could not find libucl.h. Please specify libucl installation directory])
 ])
 
 AC_CHECK_LIB([ucl], [ucl_object_new], [],
 [
-	AC_MSG_ERROR([Could not found libucl library. Please specify libucl installation directory])
+	AC_MSG_ERROR([Could not find libucl library. Please specify libucl installation directory])
 ])
 
 AC_ARG_ENABLE(debug,
