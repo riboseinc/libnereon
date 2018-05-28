@@ -11,6 +11,10 @@ size_t strlcpy(char *dst, const char *src, size_t size);
 size_t strlcat(char *dst, const char *src, size_t size);
 #endif
 
+#ifndef HAVE_GETPROGNAME
+const char *getprogname(void);
+#endif
+
 char *fill_bytes(char ch, size_t len);
 
 size_t read_file_contents(const char *fpath, char **buf);

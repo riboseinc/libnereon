@@ -32,10 +32,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#if HAVE_LIBBSD
-#include <bsd/string.h>
-#endif
-
 #include "common.h"
 #include "err.h"
 

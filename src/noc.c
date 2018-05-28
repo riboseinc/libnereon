@@ -236,7 +236,7 @@ int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **n
 
 	char *cfg_str;
 
-	struct nereon_cfg_options root_opt;
+	struct nereon_noc_options root_opt;
 
 	int ret = -1;
 
@@ -274,7 +274,7 @@ int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **n
 	/* parse HCL options */
 	ret = parse_config_options(obj, &root_opt);
 	if (ret == 0) {
-		*cfg_opts = root_opt.childs;
+		*noc_opts = root_opt.childs;
 
 #ifdef DEBUG
 		print_config_options(root_opt.childs, 0);
