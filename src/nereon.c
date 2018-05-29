@@ -36,43 +36,35 @@
 #include "util.h"
 #include "nereon.h"
 
-#include "meta.h"
-#include "cmdline.h"
-#include "cfg.h"
+#include "nos.h"
+#include "cli.h"
+#include "noc.h"
 
 /*
  * Intiialize libnereon context object
  */
 
-int nereon_ctx_init(nereon_ctx_t *ctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath)
+int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
 {
-	struct nereon_meta_options *meta_opts = NULL;
-	int meta_opts_count = 0;
+	struct nereon_nos_options *nos_opts = NULL;
+	int nos_opts_count = 0;
 
 	struct nereon_cfg_options *cfg_opts = NULL;
 
-	DEBUG_PRINT("Initializing libnereon context with prog_cfg:%s and meta_cfg:%s\n",
-			prog_cfg_fpath, meta_cfg_fpath);
+	DEBUG_PRINT("Initializing libnereon context");
 
 	memset(ctx, 0, sizeof(nereon_ctx_t));
 
-	/* parse meta options */
-	if (meta_cfg_fpath && nereon_parse_meta_options(meta_cfg_fpath, &meta_opts, &meta_opts_count) != 0) {
-		DEBUG_PRINT("Failed to parse meta options(err:%s)\n", nereon_get_err());
+	/* parse NOS options */
+	if (nos_cfg && nereon_parse_nos_options(nos_cfg, &nos_opts, &nos_opts_count) != 0) {
+		DEBUG_PRINT("Failed to parse NOS data(err:%s)\n", nereon_get_err());
 		return -1;
 	}
 
-	/* parse configuration options */
-	if (prog_cfg_fpath && nereon_parse_cfg_options(prog_cfg_fpath, &cfg_opts) != 0) {
-		DEBUG_PRINT("Faild to parse configuration options(err:%s)\n", nereon_get_err());
-		nereon_ctx_finalize(ctx);
-		return -1;
-	}
+	ctx->nos_opts = (void *)nos_opts;
+	ctx->nos_opts_count = nos_opts_count;
 
-	ctx->meta_opts = (void *)meta_opts;
-	ctx->meta_opts_count = meta_opts_count;
-
-	ctx->cfg_opts = cfg_opts;
+	ctx->noc_opts = cfg_opts;
 
 	return 0;
 }
@@ -83,39 +75,11 @@ int nereon_ctx_init(nereon_ctx_t *ctx, const char *prog_cfg_fpath, const char *m
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
-	struct nereon_cfg_options *cfg_opts = (struct nereon_cfg_options *)ctx->cfg_opts;
+	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
+	struct nereon_noc_options *noc_opts = (struct nereon_noc_options *)ctx->noc_opts;
 
-	nereon_free_cfg_options(cfg_opts);
-	nereon_free_meta_options(meta_opts, ctx->meta_opts_count);
-}
-
-/*
- * Parse configuration file
- */
-
-int nereon_parse_config(nereon_ctx_t *ctx, const char *cfg_fpath)
-{
-	struct nereon_cfg_options *cfg_opt = NULL;
-	char *cfg_hcl = NULL;
-
-	int ret;
-
-	DEBUG_PRINT("Parsing configuration file '%s'\n", cfg_fpath);
-
-	/* get configuration contents */
-	if (read_file_contents(cfg_fpath, &cfg_hcl) == 0) {
-		nereon_set_err("Could not read configuration file '%s'", cfg_fpath);
-		return -1;
-	}
-
-	ret = nereon_parse_cfg_options(cfg_hcl, &cfg_opt);
-	if (ret == 0) {
-		ctx->cfg_opts = (void *)cfg_opt;
-	}
-	free(cfg_hcl);
-
-	return ret;
+	nereon_free_noc_options(noc_opts);
+	nereon_free_nos_options(nos_opts, ctx->nos_opts_count);
 }
 
 /*
@@ -124,8 +88,6 @@ int nereon_parse_config(nereon_ctx_t *ctx, const char *cfg_fpath)
 
 int nereon_get_config_option(nereon_ctx_t *ctx, const char *key, void *val)
 {
-	/* get configuration */
-
 	return 0;
 }
 
@@ -135,9 +97,9 @@ int nereon_get_config_option(nereon_ctx_t *ctx, const char *key, void *val)
 
 int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
+	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
 
-	return nereon_cli_parse(meta_opts, ctx->meta_opts_count, argc, argv);
+	return nereon_cli_parse(nos_opts, ctx->nos_opts_count, argc, argv);
 }
 
 /*
@@ -146,9 +108,9 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
 
 void nereon_print_usage(nereon_ctx_t *ctx)
 {
-	struct nereon_meta_options *meta_opts = (struct nereon_meta_options *)ctx->meta_opts;
+	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
 
-	nereon_cli_print_usage(meta_opts, ctx->meta_opts_count);
+	nereon_cli_print_usage(nos_opts, ctx->nos_opts_count);
 }
 
 /*

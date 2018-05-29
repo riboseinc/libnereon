@@ -1,6 +1,6 @@
 
 AC_PREREQ([2.69])
-AC_INIT([libnereon], [0.9.0.5], [https://www.ribose.com])
+AC_INIT([libnereon], [0.9.0.6], [https://www.ribose.com])
 AM_INIT_AUTOMAKE([foreign subdir-objects -Wall])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_MACRO_DIR([m4])
@@ -43,10 +43,7 @@ AC_CHECK_HEADERS_ONCE([endian.h sys/endian.h machine/endian.h])
 
 AC_CHECK_HEADERS_ONCE([ucl.h])
 
-AC_SEARCH_LIBS([getprogname], [bsd],
-[
-    AC_DEFINE([HAVE_LIBBSD], [1], [Define if getprogname found in libbsd])
-])
+AC_CHECK_FUNCS([strlcpy strlcat getprogname])
 
 AC_ARG_WITH([ucl],
     [AS_HELP_STRING([--with-ucl=DIR],

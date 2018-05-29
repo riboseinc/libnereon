@@ -15,6 +15,8 @@ enum NEREON_CONFIG_TYPE {
 	NEREON_TYPE_IPPORT,
 	NEREON_TYPE_FLOAT,
 	NEREON_TYPE_OBJECT,
+	NEREON_TYPE_CONFIG,
+	NEREON_TYPE_HELPER,
 	NEREON_TYPE_UNKNOWN
 };
 
@@ -43,17 +45,17 @@ typedef struct nereon_config_option {
  */
 
 typedef struct nereon_ctx {
-	void *meta_opts;
-	int meta_opts_count;
+	void *nos_opts;
+	int nos_opts_count;
 
-	void *cfg_opts;
+	void *noc_opts;
 } nereon_ctx_t;
 
 /*
  * Initialize libnereon context object
  */
 
-int nereon_ctx_init(nereon_ctx_t *ctx, const char *prog_cfg_fpath, const char *meta_cfg_fpath);
+int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg);
 
 /*
  * Finalize libnereon context object

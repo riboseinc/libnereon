@@ -34,6 +34,18 @@
 
 #include "util.h"
 
+#ifndef HAVE_GETPROGNAME
+
+extern const char *__progname;
+
+/* get program name */
+const char *getprogname(void)
+{
+	return __progname;
+}
+
+#endif
+
 #ifndef HAVE_STRLCPY
 
 /* size bounded string copy function */

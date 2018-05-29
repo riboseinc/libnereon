@@ -38,21 +38,21 @@
 #include "err.h"
 #include "util.h"
 #include "nereon.h"
-#include "meta.h"
+#include "nos.h"
 
-#include "cfg.h"
+#include "noc.h"
 
 /*
  * free config option
  */
 
-static void free_config_options(struct nereon_cfg_options *cfg)
+static void free_config_options(struct nereon_noc_options *opt)
 {
-	if (!cfg)
+	if (!opt)
 		return;
 
-	if (cfg->childs) {
-		struct nereon_cfg_options *p = cfg->childs;
+	if (opt->childs) {
+		struct nereon_noc_options *p = opt->childs;
 
 		while (p) {
 			free_config_options(p);
@@ -60,27 +60,27 @@ static void free_config_options(struct nereon_cfg_options *cfg)
 		}
 	}
 
-	if (cfg->cfg_type == NEREON_TYPE_STRING && cfg->cfg_data.str)
-		free(cfg->cfg_data.str);
+	if (opt->type == NEREON_TYPE_STRING && opt->data.str)
+		free(opt->data.str);
 
-	free(cfg);
+	free(opt);
 }
 
 /*
  * print config options
  */
 
-static const char *convert_to_str(enum NEREON_CONFIG_TYPE cfg_type, union nereon_config_data *data)
+static const char *convert_to_str(enum NEREON_CONFIG_TYPE type, union nereon_config_data *data)
 {
 	static char str_data[512];
 
-	if (cfg_type == NEREON_TYPE_INT) {
+	if (type == NEREON_TYPE_INT) {
 		snprintf(str_data, sizeof(str_data), "%d", data->i);
-	} else if (cfg_type == NEREON_TYPE_FLOAT) {
+	} else if (type == NEREON_TYPE_FLOAT) {
 		snprintf(str_data, sizeof(str_data), "%f", data->d);
-	} else if (cfg_type == NEREON_TYPE_STRING) {
+	} else if (type == NEREON_TYPE_STRING) {
 		strlcpy(str_data, data->str, sizeof(str_data));
-	} else if (cfg_type == NEREON_TYPE_BOOL) {
+	} else if (type == NEREON_TYPE_BOOL) {
 		strlcpy(str_data, data->b ? "true" : "false", sizeof(str_data));
 	} else
 		str_data[0] = '\0';
@@ -88,11 +88,11 @@ static const char *convert_to_str(enum NEREON_CONFIG_TYPE cfg_type, union nereon
 	return str_data;
 }
 
-static void print_config_options(struct nereon_cfg_options *cfg, int level)
+static void print_config_options(struct nereon_noc_options *opt, int level)
 {
 	char *sp_str = NULL;
 
-	if (!cfg)
+	if (!opt)
 		return;
 
 	/* create space string */
@@ -103,11 +103,11 @@ static void print_config_options(struct nereon_cfg_options *cfg, int level)
 		memset(sp_str, ' ', level * 4);
 		sp_str[level * 4] = '\0';
 
-		DEBUG_PRINT("%scfg->key:%s, cfg->data:%s\n", sp_str, cfg->cfg_key, convert_to_str(cfg->cfg_type, &cfg->cfg_data));
+		DEBUG_PRINT("%sopt->key:%s, opt->data:%s\n", sp_str, opt->key, convert_to_str(opt->type, &opt->data));
 	}
 
-	if (cfg->childs) {
-		struct nereon_cfg_options *p = cfg->childs;
+	if (opt->childs) {
+		struct nereon_noc_options *p = opt->childs;
 
 		level++;
 		while (p) {
@@ -123,17 +123,17 @@ static void print_config_options(struct nereon_cfg_options *cfg, int level)
  * allocate memory for config option
  */
 
-static struct nereon_cfg_options *new_cfg_option()
+static struct nereon_noc_options *new_noc_option()
 {
-	struct nereon_cfg_options *p;
+	struct nereon_noc_options *p;
 
-	p = (struct nereon_cfg_options *)malloc(sizeof(struct nereon_cfg_options));
+	p = (struct nereon_noc_options *)malloc(sizeof(struct nereon_noc_options));
 	if (!p) {
 		nereon_set_err("Could not create UCL parser");
 		return NULL;
 	}
 
-	memset(p, 0, sizeof(struct nereon_cfg_options));
+	memset(p, 0, sizeof(struct nereon_noc_options));
 
 	return p;
 }
@@ -142,17 +142,17 @@ static struct nereon_cfg_options *new_cfg_option()
  * add config option to list
  */
 
-static void add_cfg_option(struct nereon_cfg_options *parent_cfg, struct nereon_cfg_options *cfg)
+static void add_noc_option(struct nereon_noc_options *parent_opt, struct nereon_noc_options *opt)
 {
-	if (!parent_cfg->childs) {
-		parent_cfg->childs = cfg;
+	if (!parent_opt->childs) {
+		parent_opt->childs = opt;
 	} else {
-		struct nereon_cfg_options *p = parent_cfg->childs;
+		struct nereon_noc_options *p = parent_opt->childs;
 
 		while (p->next)
 			p = p->next;
 
-		p->next = cfg;
+		p->next = opt;
 	}
 }
 
@@ -160,20 +160,20 @@ static void add_cfg_option(struct nereon_cfg_options *parent_cfg, struct nereon_
  * set value for config option
  */
 
-static int set_cfg_value(const ucl_object_t *obj, struct nereon_cfg_options *cfg)
+static int set_noc_value(const ucl_object_t *obj, struct nereon_noc_options *opt)
 {
 	if (obj->type == UCL_INT) {
-		cfg->cfg_type = NEREON_TYPE_INT;
-		cfg->cfg_data.i = ucl_object_toint(obj);
+		opt->type = NEREON_TYPE_INT;
+		opt->data.i = ucl_object_toint(obj);
 	} else if (obj->type == UCL_FLOAT) {
-		cfg->cfg_type = NEREON_TYPE_FLOAT;
-		cfg->cfg_data.d = ucl_object_todouble(obj);
+		opt->type = NEREON_TYPE_FLOAT;
+		opt->data.d = ucl_object_todouble(obj);
 	} else if (obj->type == UCL_STRING) {
-		cfg->cfg_type = NEREON_TYPE_STRING;
-		cfg->cfg_data.str = strdup(ucl_object_tostring(obj));
+		opt->type = NEREON_TYPE_STRING;
+		opt->data.str = strdup(ucl_object_tostring(obj));
 	} else if (obj->type == UCL_BOOLEAN) {
-		cfg->cfg_type = NEREON_TYPE_BOOL;
-		cfg->cfg_data.b = ucl_object_toboolean(obj);
+		opt->type = NEREON_TYPE_BOOL;
+		opt->data.b = ucl_object_toboolean(obj);
 	} else
 		return -1;
 
@@ -184,37 +184,37 @@ static int set_cfg_value(const ucl_object_t *obj, struct nereon_cfg_options *cfg
  * parse configuration options from UCL object
  */
 
-int parse_config_options(const ucl_object_t *obj, struct nereon_cfg_options *parent_cfg)
+int parse_config_options(const ucl_object_t *obj, struct nereon_noc_options *parent_opt)
 {
 	const ucl_object_t *cur, *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false))) {
-		struct nereon_cfg_options *cfg;
+		struct nereon_noc_options *opt;
 
 		/* create HCL config from UCL object */
-		cfg = new_cfg_option();
-		if (!cfg) {
+		opt = new_noc_option();
+		if (!opt) {
 			nereon_set_err("Out of memory!");
 			return -1;
 		}
-		add_cfg_option(parent_cfg, cfg);
+		add_noc_option(parent_opt, opt);
 
 		if (obj->key != NULL) {
-			strlcpy(cfg->cfg_key, obj->key, sizeof(cfg->cfg_key));
+			strlcpy(opt->key, obj->key, sizeof(opt->key));
 		}
 
 		if (obj->type == UCL_OBJECT || obj->type == UCL_ARRAY) {
-			cfg->cfg_type = obj->type == UCL_OBJECT ? NEREON_TYPE_OBJECT : NEREON_TYPE_ARRAY;
+			opt->type = obj->type == UCL_OBJECT ? NEREON_TYPE_OBJECT : NEREON_TYPE_ARRAY;
 
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate(obj, &it_obj, true))) {
-				if (parse_config_options(cur, cfg) != 0)
+				if (parse_config_options(cur, opt) != 0)
 					return -1;
 			}
 		} else {
-			if (set_cfg_value(obj, cfg) != 0) {
+			if (set_noc_value(obj, opt) != 0) {
 				nereon_set_err("Invalid configuration type for config '%s'", obj->key);
 				return -1;
 			}
@@ -229,13 +229,14 @@ int parse_config_options(const ucl_object_t *obj, struct nereon_cfg_options *par
  * parse configuration options
  */
 
-int nereon_parse_cfg_options(const char *cfg_fpath, struct nereon_cfg_options **cfg_opts)
+int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **noc_opts)
 {
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
 
 	char *cfg_str;
-	struct nereon_cfg_options root_opt;
+
+	struct nereon_noc_options root_opt;
 
 	int ret = -1;
 
@@ -244,8 +245,8 @@ int nereon_parse_cfg_options(const char *cfg_fpath, struct nereon_cfg_options **
 	memset(&root_opt, 0, sizeof(root_opt));
 
 	/* get configuration contents from file */
-	if (read_file_contents(cfg_fpath, &cfg_str) == 0) {
-		nereon_set_err("Could not read configuration from '%s'", cfg_fpath);
+	if (read_file_contents(cfg_path, &cfg_str) == 0) {
+		nereon_set_err("Could not read configuration from '%s'", cfg_path);
 		return -1;
 	}
 
@@ -273,7 +274,7 @@ int nereon_parse_cfg_options(const char *cfg_fpath, struct nereon_cfg_options **
 	/* parse HCL options */
 	ret = parse_config_options(obj, &root_opt);
 	if (ret == 0) {
-		*cfg_opts = root_opt.childs;
+		*noc_opts = root_opt.childs;
 
 #ifdef DEBUG
 		print_config_options(root_opt.childs, 0);
@@ -295,7 +296,7 @@ end:
  * free configuration options
  */
 
-void nereon_free_cfg_options(struct nereon_cfg_options *cfg_opts)
+void nereon_free_noc_options(struct nereon_noc_options *cfg_opts)
 {
 	free_config_options(cfg_opts);
 }
