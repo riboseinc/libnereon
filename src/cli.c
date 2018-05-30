@@ -42,8 +42,6 @@
 #include "nereon.h"
 #include "nos.h"
 
-#define CLI_LONG_OPT_PREFIX                    "|--"
-
 /*
  * show helper message
  */
@@ -69,11 +67,24 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_options *opt = &nos_opts[i];
 
+		char sw_short[3];
+
 		char *padding_sw, *padding_desc;
 		int padding_sw_len, padding_desc_len;
 
+		char *cli_lopt_prefix = strlen(opt->sw_short) > 0 ? "|--" : "--";
+		char *short_desc_prefix = opt->exist_cli_default ? "[" : "<";
+		char *short_desc_tail = opt->exist_cli_default ? "]" : ">";
+
+		if (strlen(opt->sw_short) == 0) {
+			memset(sw_short, 0x20, sizeof(sw_short));
+			sw_short[2] = '\0';
+		} else {
+			snprintf(sw_short, sizeof(sw_short), "-%s", opt->sw_short);
+		}
+
 		padding_sw_len = strlen(opt->sw_long) > 0 ? max_sw_len - strlen(opt->sw_long) :
-					max_sw_len + strlen(CLI_LONG_OPT_PREFIX) - 1;
+					max_sw_len + strlen(cli_lopt_prefix) - 1;
 		padding_sw = fill_bytes(' ', padding_sw_len);
 
 		padding_desc_len = strlen(opt->desc_short) > 0 ? max_desc_len - strlen(opt->desc_short) :
@@ -81,19 +92,19 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
 		padding_desc = fill_bytes(' ', max_desc_len - strlen(opt->desc_short));
 
 		if (opt->type != NEREON_TYPE_BOOL) {
-			fprintf(stdout, "  -%s%s%s%s%s%s%s%s: %s\n",
-				opt->sw_short,
-				strlen(opt->sw_long) > 0 ? CLI_LONG_OPT_PREFIX : " ",
+			fprintf(stdout, "  %s%s%s%s%s%s%s%s: %s\n",
+				sw_short,
+				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
 				opt->sw_long, padding_sw,
-				strlen(opt->desc_short) > 0 ? "<" : " ",
+				strlen(opt->desc_short) > 0 ? short_desc_prefix : " ",
 				opt->desc_short,
-				strlen(opt->desc_short) > 0 ? ">" : " ",
+				strlen(opt->desc_short) > 0 ? short_desc_tail : " ",
 				padding_desc,
 				opt->desc_long);
 		} else {
-			fprintf(stdout, "  -%s%s%s%s%s  : %s\n",
-				opt->sw_short,
-				strlen(opt->sw_long) > 0 ? CLI_LONG_OPT_PREFIX : " ",
+			fprintf(stdout, "  %s%s%s%s%s  : %s\n",
+				sw_short,
+				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
 				opt->sw_long, padding_sw,
 				padding_desc,
 				opt->desc_long);
@@ -111,24 +122,24 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
  * set options from command line
  */
 
-int set_opt_val(const char *arg, struct nereon_nos_options *opt)
+static int set_opt_val(const char *arg, struct nereon_nos_options *opt)
 {
 	if (opt->type == NEREON_TYPE_INT) {
-		int cfg_i;
+		int i;
 
-		cfg_i = (int)strtol(arg, NULL, 10);
+		i = (int)strtol(arg, NULL, 10);
 		if (errno == EINVAL || errno == ERANGE) {
 			return -1;
 		}
-		opt->data.i = cfg_i;
+		opt->data.i = i;
 	} else if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT) {
-		char *cfg_str;
+		char *str;
 
-		cfg_str = strdup(arg);
-		if (!cfg_str) {
+		str = strdup(arg);
+		if (!str) {
 			return -1;
 		}
-		opt->data.str = cfg_str;
+		opt->data.str = str;
 	}
 	opt->is_set = true;
 

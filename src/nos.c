@@ -66,14 +66,38 @@ static enum NEREON_CONFIG_TYPE parse_opt_type(const char *type_str)
 }
 
 /*
+ * set options
+ */
+
+static int set_default_value(const ucl_object_t *obj, struct nereon_nos_options *opt)
+{
+	if (opt->type == NEREON_TYPE_INT && obj->type == UCL_INT) {
+		opt->default_data.i = ucl_object_toint(obj);
+	} else if ((opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT ||
+		opt->type == NEREON_TYPE_CONFIG) &&
+		obj->type == UCL_STRING) {
+		char *str;
+
+		str = strdup(ucl_object_tostring(obj));
+		if (!str) {
+			return -1;
+		}
+		opt->data.str = str;
+	} else {
+		DEBUG_PRINT("Invalid default value for config_option '%s'\n", opt->name);
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
  * parse switch options
  */
 
 static void parse_switch_options(const ucl_object_t *obj, struct nereon_nos_options *opt)
 {
 	const ucl_object_t *sub_obj;
-
-	DEBUG_PRINT("Parsing switch options\n");
 
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
@@ -94,8 +118,6 @@ static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_option
 {
 	const ucl_object_t *sub_obj;
 
-	DEBUG_PRINT("Parsing description options\n");
-
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
 		strlcpy(opt->desc_short, ucl_object_tostring(sub_obj), sizeof(opt->desc_short));
@@ -108,23 +130,73 @@ static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_option
 }
 
 /*
+ * parse cmdline arguments
+ */
+
+static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_options *opt)
+{
+	const ucl_object_t *sub_obj, *tmp;
+	ucl_object_iter_t it = NULL;
+
+	int ret = 0;
+
+	tmp = obj;
+	while ((obj = ucl_object_iterate(tmp, &it, true))) {
+		struct nereon_nos_options arg;
+
+		sub_obj = ucl_object_lookup(obj, "type");
+		if (!sub_obj)
+			continue;
+
+		/* set argument */
+		memset(&arg, 0, sizeof(struct nereon_nos_options));
+
+		strlcpy(arg.name, obj->key, sizeof(arg.name));
+		arg.type = parse_opt_type(ucl_object_tostring(sub_obj));
+
+		opt->cli_args = realloc(opt->cli_args, (opt->cli_args_count + 1) * sizeof(struct nereon_nos_options));
+		if (!opt->cli_args) {
+			opt->cli_args_count = 0;
+			return;
+		}
+
+		memcpy(&opt->cli_args[opt->cli_args_count++], &arg, sizeof(struct nereon_nos_options));
+	}
+}
+
+/*
  * parse cmdline options
  */
 
 static void parse_cmdline_options(const ucl_object_t *obj, struct nereon_nos_options *opt)
 {
-	const ucl_object_t *sub_obj;
+	const ucl_object_t *tmp;
+	ucl_object_iter_t it = NULL;
 
-	sub_obj = ucl_object_lookup(obj, "switch");
-	if (sub_obj && sub_obj->type == UCL_OBJECT) {
-		parse_switch_options(sub_obj, opt);	
-	}
+	tmp = obj;
+	while ((obj = ucl_object_iterate(tmp, &it, false))) {
+		const ucl_object_t *sub_obj;
 
-	sub_obj = ucl_object_lookup(obj, "description");
-	if (!sub_obj)
-		sub_obj = ucl_object_lookup(obj->next, "description");
-	if (sub_obj && sub_obj->type == UCL_OBJECT) {
-		parse_desc_options(sub_obj, opt);	
+		/* parse switch options */
+		sub_obj = ucl_object_lookup(obj, "switch");
+		if (sub_obj && sub_obj->type == UCL_OBJECT) {
+			parse_switch_options(sub_obj, opt);
+			continue;
+		}
+
+		/* parse description options */
+		sub_obj = ucl_object_lookup(obj, "description");
+		if (sub_obj && sub_obj->type == UCL_OBJECT) {
+			parse_desc_options(sub_obj, opt);
+			continue;
+		}
+
+		/* parse arguments */
+		sub_obj = ucl_object_lookup(obj, "arguments");
+		if (sub_obj && sub_obj->type == UCL_OBJECT) {
+			parse_cmdline_arguments(sub_obj, opt);
+			continue;
+		}
 	}
 }
 
@@ -135,8 +207,6 @@ static void parse_cmdline_options(const ucl_object_t *obj, struct nereon_nos_opt
 static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_options *opt)
 {
 	const ucl_object_t *sub_obj;
-
-	DEBUG_PRINT("Parsing config '%s'\n", obj->key);
 
 	/* set key */
 	strlcpy(opt->name, obj->key, sizeof(opt->name));
@@ -172,6 +242,12 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
 	sub_obj = ucl_object_lookup(obj, "config");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
 		strlcpy(opt->noc_key, ucl_object_tostring(sub_obj), sizeof(opt->noc_key));
+	}
+
+	/* get default */
+	sub_obj = ucl_object_lookup(obj, "default");
+	if (sub_obj && set_default_value(sub_obj, opt) == 0) {
+		opt->exist_default = true;
 	}
 
 	return 0;
@@ -260,7 +336,7 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **no
 
 	int ret;
 
-	DEBUG_PRINT("Parsing HCL options\n");
+	DEBUG_PRINT("Parsing NOS options\n");
 
 	/* create UCL object from HCL string */
 	parser = ucl_parser_new(0);
@@ -296,7 +372,7 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **no
 }
 
 /*
- * free HCL options
+ * free NOS options
  */
 
 void nereon_free_nos_options(struct nereon_nos_options *nos_opts, int nos_opts_count)
@@ -309,6 +385,10 @@ void nereon_free_nos_options(struct nereon_nos_options *nos_opts, int nos_opts_c
 		if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT) {
 			if (opt->data.str)
 				free(opt->data.str);
+		}
+
+		if (opt->cli_args_count > 0) {
+			nereon_free_nos_options(opt->cli_args, opt->cli_args_count);
 		}
 	}
 
