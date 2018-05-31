@@ -48,22 +48,14 @@
 
 static void free_config_options(struct nereon_noc_options *opt)
 {
-	if (!opt)
-		return;
+	if (opt) {
+		free_config_options(opt->childs);
+		free_config_options(opt->next);
+		if (opt->type == NEREON_TYPE_STRING && opt->data.str)
+			free(opt->data.str);
 
-	if (opt->childs) {
-		struct nereon_noc_options *p = opt->childs;
-
-		while (p) {
-			free_config_options(p);
-			p = p->next;
-		}
+		free(opt);
 	}
-
-	if (opt->type == NEREON_TYPE_STRING && opt->data.str)
-		free(opt->data.str);
-
-	free(opt);
 }
 
 /*
