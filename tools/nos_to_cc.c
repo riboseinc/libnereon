@@ -97,11 +97,14 @@ static int write_cc_files(const char *src_fpath, const char *hdr_fpath, const ch
 
 	p = nos_str;
 	while (*p != '\0') {
-		if (*p == '"' || *p == '\n') {
-			fputc('\\', src_fp);
-		}
-		fputc(*p, src_fp);
+		if (*p == '\n')
+			fprintf(src_fp, "\\n");
+		else {
+			if (*p == '"')
+				fputc('\\', src_fp);
 
+			fputc(*p, src_fp);
+		}
 		p++;
 	}
 	fprintf(src_fp, "\";\n\n");
