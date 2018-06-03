@@ -2,7 +2,7 @@
 test_common_cflags = -I$(top_srcdir)/src -Wall -W -Wno-unused-parameter -Wno-pointer-sign
 test_common_ldflags = -L$(top_srcdir)/src/.libs
 
-bin_PROGRAMS = ucl_test noc_test nos_test
+noinst_PROGRAMS = ucl_test noc_test nos_test
 
 ucl_test_SOURCES = ucl_test.c
 ucl_test_CFLAGS = $(test_common_cflags)

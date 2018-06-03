@@ -17,10 +17,20 @@ struct nereon_nos_options {
 	char desc_short[CFG_MAX_SHORT_DESC];
 	char desc_long[CFG_MAX_LONG_DESC];
 
+	int cli_args_count;
+	struct nereon_nos_options *cli_args;
+	char args_desc[CFG_MAX_LONG_DESC];                      /* available if option is cli argument */
+
+	bool exist_cli_default;
+	union nereon_config_data cli_default_data;
+
 	char env[CFG_MAX_ENV_NAME];
 	char noc_key[CFG_MAX_KEY_NAME];
 
 	union nereon_config_data data;
+
+	bool exist_default;
+	union nereon_config_data default_data;
 };
 
 /*

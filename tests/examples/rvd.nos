@@ -76,8 +76,8 @@ config_option "openvpn_bin" {
 	}
 
 	env = "OPENVPN_BIN_PATH"
-	config = "openvpn.path"
 
+	config = "openvpn.path"
 	default = "/opt/openvpn/sbin/openvpn"
 }
 

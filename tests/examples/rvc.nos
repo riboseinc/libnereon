@@ -7,7 +7,12 @@ config_option "connect" {
 	}
 
 	cmdline "description" {
-		long = "connect to a VPN with given name"
+		short = "all|connection name"
+		long = "connect to a VPN with given name (default:all)"
+	}
+
+	cmdline "arguments" "json" {
+		type = "bool"
 	}
 
 	default = "all"
@@ -21,7 +26,12 @@ config_option "disconnect" {
 	}
 
 	cmdline "description" {
-		long = "disconnect VPN with given name"
+		short = "all|connection name"
+		long = "disconnect VPN with given name (default:all)"
+	}
+
+	cmdline "arguments" "json" {
+		type = "bool"
 	}
 
 	default = "all"
@@ -35,7 +45,12 @@ config_option "reconnect" {
 	}
 
 	cmdline "description" {
-		long = "reconnect VPN with given name"
+		short = "all|connection name"
+		long = "reconnect VPN with given name (default:all)"
+	}
+
+	cmdline "arguments" "json" {
+		type = "bool"
 	}
 
 	default = "all"
@@ -49,7 +64,12 @@ config_option "status" {
 	}
 
 	cmdline "description" {
-		long = "get status of VPN connection with given name"
+		short = "all|connection name"
+		long = "get status of VPN connection with given name (default:all)"
+	}
+
+	cmdline "arguments" "json" {
+		type = "bool"
 	}
 
 	default = "all"
@@ -62,19 +82,13 @@ config_option "edit" {
 		long = "edit"
 	}
 
-	cmdline "arguments" "auto-connect" {
+	cmdline "arguments" "auto-connect|pre-exec-cmd|profile" {
 		type = "string"
-	}
-
-	cmdline "arguments" "pre-exec-cmd" {
-		type = "string"
-	}
-
-	cmdline "arguments" "profile" {
-		type = "string"
+		desc = "value"
 	}
 
 	cmdline "description" {
+		short = "connection name"
 		long = "edit VPN connection with given name"
 	}
 }
@@ -91,6 +105,7 @@ config_option "remove" {
 	}
 
 	cmdline "description" {
+		short = "connection name"
 		long = "remove VPN connection (sudo required)"
 	}
 }
@@ -99,18 +114,15 @@ config_option "import" {
 	type = "string"
 
 	cmdline "switch" {
-		long = "remove"
+		long = "import"
 	}
 
-	cmdline "arguments" "new-from-tblk" {
-		type = "bool"
-	}
-
-	cmdline "arguments" "new-from-ovpn" {
+	cmdline "arguments" "new-from-tblk|new-from-ovpn" {
 		type = "bool"
 	}
 
 	cmdline "description" {
+		short = "path"
 		long = "import VPN connection (sudo required)"
 	}
 }
@@ -136,13 +148,10 @@ config_option "dns-override" {
 
 	cmdline "arguments" "enable" {
 		type = "string"
+		desc = "DNS server IP list"
 	}
 
-	cmdline "arguments" "disable" {
-		type = "bool"
-	}
-
-	cmdline "arguments" "status" {
+	cmdline "arguments" "disable|status" {
 		type = "bool"
 	}
 
@@ -156,6 +165,11 @@ config_option "script-security" {
 
 	cmdline "switch" {
 		long = "script-security"
+	}
+
+	cmdline "description" {
+		short = "enable|disable"
+		long = "enable/disable script security"
 	}
 }
 

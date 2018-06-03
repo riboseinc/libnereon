@@ -26,3 +26,5 @@ stamp-h1
 tests/ucl_test
 tests/nos_test
 tests/noc_test
+tools/nos_to_cc
+*nos.*

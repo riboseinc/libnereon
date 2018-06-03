@@ -1,6 +1,6 @@
 
 AC_PREREQ([2.69])
-AC_INIT([libnereon], [0.9.0.6], [https://www.ribose.com])
+AC_INIT([libnereon], [0.9.0.7], [https://www.ribose.com])
 AM_INIT_AUTOMAKE([foreign subdir-objects -Wall])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_MACRO_DIR([m4])
@@ -76,6 +76,7 @@ fi
 AC_CONFIG_FILES([Makefile
                 src/Makefile
                 tests/Makefile
+                tools/Makefile
                 ])
 
 AC_OUTPUT

@@ -51,7 +51,7 @@ int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
 
 	struct nereon_cfg_options *cfg_opts = NULL;
 
-	DEBUG_PRINT("Initializing libnereon context");
+	DEBUG_PRINT("Initializing libnereon context\n");
 
 	memset(ctx, 0, sizeof(nereon_ctx_t));
 
