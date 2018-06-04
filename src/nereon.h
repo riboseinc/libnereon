@@ -76,10 +76,10 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv);
 void nereon_print_usage(nereon_ctx_t *ctx);
 
 /*
- * get configuration option
+ * parse configuration options
  */
 
-int nereon_get_config_option(nereon_ctx_t *ctx, const char *key, void *val);
+int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count);
 
 /*
  * Get the last error message

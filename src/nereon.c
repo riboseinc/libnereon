@@ -83,10 +83,10 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx)
 }
 
 /*
- * get configuration option
+ * parse nereon configuration options
  */
 
-int nereon_get_config_option(nereon_ctx_t *ctx, const char *key, void *val)
+int nereon_get_config_option(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count)
 {
 	return 0;
 }

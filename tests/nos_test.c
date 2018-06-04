@@ -30,40 +30,7 @@
 #include <sys/stat.h>
 
 #include "nereon.h"
-
-/*
- * read file contents
- */
-
-static size_t read_file_contents(const char *fpath, char **buf)
-{
-	FILE *fp;
-	struct stat st;
-	size_t read_len;
-
-	if (stat(fpath, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size == 0) {
-		return 0;
-	}
-
-	fp = fopen(fpath, "r");
-	if (!fp) {
-		return 0;
-	}
-
-	*buf = (char *) malloc(st.st_size + 1);
-	if (*buf == NULL) {
-		fclose(fp);
-		return 0;
-	}
-
-	read_len = fread(*buf, 1, st.st_size, fp);
-	if (read_len > 0) {
-		(*buf)[read_len] = '\0';
-	}
-	fclose(fp);
-
-	return read_len;
-}
+#include "rvd.nos.h"
 
 /*
  * main function
@@ -74,24 +41,10 @@ int main(int argc, char *argv[])
 	nereon_ctx_t ctx;
 	int ret;
 
-	char *nos_cfg;
-
-	if (argc != 2) {
-		fprintf(stderr, "%s <NOS configuration file>\n", getprogname());
-		exit(1);
-	}
-
-	/* read NOS configuration */
-	if (read_file_contents(argv[1], &nos_cfg) == 0) {
-		fprintf(stderr, "Failed to read NOS configuration from '%s'\n", argv[1]);
-		exit(1);
-	}
-
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&ctx, nos_cfg);
+	ret = nereon_ctx_init(&ctx, get_nos_cfg());
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
-		free(nos_cfg);
 		return -1;
 	}
 
@@ -103,8 +56,6 @@ int main(int argc, char *argv[])
 
 	/* finalize nereon context */
 	nereon_ctx_finalize(&ctx);
-
-	free(nos_cfg);
 
 	return ret;
 }
