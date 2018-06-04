@@ -12,4 +12,15 @@
 #define CFG_MAX_KEY_NAME                  128
 #define CFG_MAX_ERR_MSG                   1024
 
+/*
+ * libnereon configuration data
+ */
+
+union nereon_config_data {
+	int i;
+	char *str;
+	bool b;
+	double d;
+};
+
 #endif /* __NEREON_COMMON_H__ */

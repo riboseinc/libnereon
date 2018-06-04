@@ -46,7 +46,7 @@
 
 int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
 {
-	struct nereon_nos_options *nos_opts = NULL;
+	struct nereon_nos_option *nos_opts = NULL;
 	int nos_opts_count = 0;
 
 	struct nereon_cfg_options *cfg_opts = NULL;
@@ -75,8 +75,8 @@ int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx)
 {
-	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
-	struct nereon_noc_options *noc_opts = (struct nereon_noc_options *)ctx->noc_opts;
+	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
+	struct nereon_noc_option *noc_opts = (struct nereon_noc_option *)ctx->noc_opts;
 
 	nereon_free_noc_options(noc_opts);
 	nereon_free_nos_options(nos_opts, ctx->nos_opts_count);
@@ -86,8 +86,45 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx)
  * parse nereon configuration options
  */
 
-int nereon_get_config_option(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count)
+int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count)
 {
+	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
+	struct nereon_noc_option *noc_opts = (struct nereon_noc_option *)ctx->noc_opts;
+
+	int i;
+
+	for (i = 0; i < opts_count; i++) {
+		nereon_config_option_t *cfg_opt = &cfg_opts[i];
+
+		struct nereon_nos_option *nos_opt;
+		struct nereon_noc_option *noc_opt;
+
+		union nereon_config_data *cfg_data = NULL;
+
+		/* get config from NOS */
+		nos_opt = nereon_get_nos_option(nos_opts, ctx->nos_opts_count, cfg_opt->name);
+		if (!nos_opt)
+			return -1;
+
+		if (nos_opt->is_set) {
+			/* set config value from command line at first */
+			cfg_data = &nos_opt->data;
+		} else {
+			/* set config value from configuration file */
+			if (strlen(nos_opt->noc_key) > 0 &&
+				(noc_opt = nereon_get_noc_option(noc_opts, nos_opt->noc_key))) {
+				cfg_data = &noc_opt->data;
+			} else if (nos_opt->exist_default) {
+				cfg_data = &nos_opt->default_data;
+			}
+		}
+
+		if (!cfg_data) {
+			nereon_set_err("Could not get configuration for '%s'", cfg_opt->name);
+			return -1;
+		}
+	}
+
 	return 0;
 }
 
@@ -97,10 +134,45 @@ int nereon_get_config_option(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts
 
 int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
 {
-	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
+	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
 
 	return nereon_cli_parse(nos_opts, ctx->nos_opts_count, argc, argv);
 }
+
+/*
+ * parse NOC configuration file
+ */
+
+int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath)
+{
+	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
+	int i, ret;
+
+	const char *cfg_fpath = noc_cfg_fpath;
+
+	struct nereon_noc_option *noc_opts = NULL;
+
+	/* check if configuration file was specified in command line */
+	for (i = 0; i < ctx->nos_opts_count; i++) {
+		struct nereon_nos_option *opt = &ctx->nos_opts[i];
+
+		if (opt->type == NEREON_TYPE_CONFIG && opt->is_set) {
+			cfg_fpath = opt->data.str;
+			break;
+		}
+	}
+
+	ret = nereon_parse_noc_options(cfg_fpath, &noc_opts);
+	if (ret != 0) {
+		DEBUG_PRINT("Failed to parse NOC configuration %s(err:%s)\n", cfg_fpath, nereon_get_err());
+		return ret;
+	}
+
+	ctx->noc_opts = (void *)noc_opts;
+
+	return 0;
+}
+
 
 /*
  * Print command line usage message
@@ -108,7 +180,7 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
 
 void nereon_print_usage(nereon_ctx_t *ctx)
 {
-	struct nereon_nos_options *nos_opts = (struct nereon_nos_options *)ctx->nos_opts;
+	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
 
 	nereon_cli_print_usage(nos_opts, ctx->nos_opts_count);
 }

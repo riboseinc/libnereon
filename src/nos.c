@@ -39,6 +39,35 @@
 
 #include "nos.h"
 
+static const char *nos_types[] = {
+	"INT", "BOOL", "STRING", "ARRAY", "IPPORT", "FLOAT",
+	"OBJECT", "CONFIG", "HELPER", "UNKNOWN"
+};
+
+/*
+ * print NOS options
+ */
+
+static void print_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count)
+{
+	int i;
+
+	DEBUG_PRINT("Printing NOS options\n");
+
+	for (i = 0; i < nos_opts_count; i++) {
+		struct nereon_nos_option *opt = &nos_opts[i];
+
+		DEBUG_PRINT("\tname: %s\n", opt->name);
+		DEBUG_PRINT("\t\ttype: %s\n", nos_types[opt->type]);
+		DEBUG_PRINT("\t\tshort_sw: %s\n", opt->sw_short);
+		DEBUG_PRINT("\t\tlong_sw: %s\n", opt->sw_long);
+		DEBUG_PRINT("\t\tshort_desc: %s\n", opt->desc_short);
+		DEBUG_PRINT("\t\tlong_desc: %s\n", opt->desc_long);
+		DEBUG_PRINT("\t\tenv: %s\n", opt->desc_short);
+		DEBUG_PRINT("\t\tconfig: %s\n", opt->noc_key);
+	}
+}
+
 /*
  * parse option types
  */
@@ -69,7 +98,7 @@ static enum NEREON_CONFIG_TYPE parse_opt_type(const char *type_str)
  * set options
  */
 
-static int set_default_value(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static int set_default_value(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	if (opt->type == NEREON_TYPE_INT && obj->type == UCL_INT) {
 		opt->default_data.i = ucl_object_toint(obj);
@@ -95,7 +124,7 @@ static int set_default_value(const ucl_object_t *obj, struct nereon_nos_options 
  * parse switch options
  */
 
-static void parse_switch_options(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static void parse_switch_options(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -114,7 +143,7 @@ static void parse_switch_options(const ucl_object_t *obj, struct nereon_nos_opti
  * parse description options
  */
 
-static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -133,7 +162,7 @@ static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_option
  * parse cmdline arguments
  */
 
-static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	const ucl_object_t *sub_obj, *tmp;
 	ucl_object_iter_t it = NULL;
@@ -142,25 +171,25 @@ static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_o
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, true))) {
-		struct nereon_nos_options arg;
+		struct nereon_nos_option arg;
 
 		sub_obj = ucl_object_lookup(obj, "type");
 		if (!sub_obj)
 			continue;
 
 		/* set argument */
-		memset(&arg, 0, sizeof(struct nereon_nos_options));
+		memset(&arg, 0, sizeof(struct nereon_nos_option));
 
 		strlcpy(arg.name, obj->key, sizeof(arg.name));
 		arg.type = parse_opt_type(ucl_object_tostring(sub_obj));
 
-		opt->cli_args = realloc(opt->cli_args, (opt->cli_args_count + 1) * sizeof(struct nereon_nos_options));
+		opt->cli_args = realloc(opt->cli_args, (opt->cli_args_count + 1) * sizeof(struct nereon_nos_option));
 		if (!opt->cli_args) {
 			opt->cli_args_count = 0;
 			return;
 		}
 
-		memcpy(&opt->cli_args[opt->cli_args_count++], &arg, sizeof(struct nereon_nos_options));
+		memcpy(&opt->cli_args[opt->cli_args_count++], &arg, sizeof(struct nereon_nos_option));
 	}
 }
 
@@ -168,7 +197,7 @@ static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_o
  * parse cmdline options
  */
 
-static void parse_cmdline_options(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static void parse_cmdline_options(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	const ucl_object_t *tmp;
 	ucl_object_iter_t it = NULL;
@@ -204,7 +233,7 @@ static void parse_cmdline_options(const ucl_object_t *obj, struct nereon_nos_opt
  * parse options
  */
 
-static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_options *opt)
+static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
 	const ucl_object_t *sub_obj;
 
@@ -257,7 +286,7 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
  * parse cmdline options
  */
 
-static int parse_nereon_options(const ucl_object_t *obj, struct nereon_nos_options **nos_opts, int *nos_opts_count)
+static int parse_nereon_options(const ucl_object_t *obj, struct nereon_nos_option **nos_opts, int *nos_opts_count)
 {
 	const ucl_object_t *tmp, *cur;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
@@ -269,19 +298,19 @@ static int parse_nereon_options(const ucl_object_t *obj, struct nereon_nos_optio
 		if (strcmp(obj->key, "config_option") == 0 && obj->type == UCL_OBJECT) {
 			it_obj = NULL;
 			while ((cur = ucl_object_iterate(obj, &it_obj, true)) && ret == 0) {
-				struct nereon_nos_options opt;
+				struct nereon_nos_option opt;
 
 				DEBUG_PRINT("parse_nereon_options() key:%s\n", cur->key);
 
-				memset(&opt, 0, sizeof(struct nereon_nos_options));
+				memset(&opt, 0, sizeof(struct nereon_nos_option));
 				if (parse_config_option(cur, &opt) == 0) {
-					*nos_opts = (struct nereon_nos_options *)realloc(*nos_opts,
-								(*nos_opts_count + 1) * sizeof(struct nereon_nos_options));
+					*nos_opts = (struct nereon_nos_option *)realloc(*nos_opts,
+								(*nos_opts_count + 1) * sizeof(struct nereon_nos_option));
 					if (*nos_opts == NULL) {
 						nereon_set_err("Out of memory!");
 						ret = -1;
 					} else {
-						memcpy(&(*nos_opts)[*nos_opts_count], &opt, sizeof(struct nereon_nos_options));
+						memcpy(&(*nos_opts)[*nos_opts_count], &opt, sizeof(struct nereon_nos_option));
 						(*nos_opts_count)++;
 					}
 				} else {
@@ -302,12 +331,12 @@ static int parse_nereon_options(const ucl_object_t *obj, struct nereon_nos_optio
  * parse HCL options
  */
 
-static int parse_nos_options(const ucl_object_t *obj, struct nereon_nos_options **nos_opts, int *nos_opts_count)
+static int parse_nos_options(const ucl_object_t *obj, struct nereon_nos_option **nos_opts, int *nos_opts_count)
 {
 	const ucl_object_t *tmp, *cur;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
-	struct nereon_nos_options *opt;
+	struct nereon_nos_option *opt;
 
 	int ret = 0;
 
@@ -329,7 +358,7 @@ static int parse_nos_options(const ucl_object_t *obj, struct nereon_nos_options 
  * parse HCL options
  */
 
-int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **nos_opts, int *nos_opts_count)
+int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_option **nos_opts, int *nos_opts_count)
 {
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
@@ -368,6 +397,9 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **no
 	ucl_object_unref(obj);
 	ucl_parser_free(parser);
 
+	if (ret == 0)
+		print_nos_options(*nos_opts, *nos_opts_count);
+
 	return ret;
 }
 
@@ -375,12 +407,12 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **no
  * free NOS options
  */
 
-void nereon_free_nos_options(struct nereon_nos_options *nos_opts, int nos_opts_count)
+void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count)
 {
 	int i;
 
 	for (i = 0; i < nos_opts_count; i++) {
-		struct nereon_nos_options *opt = &nos_opts[i];
+		struct nereon_nos_option *opt = &nos_opts[i];
 
 		if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT) {
 			if (opt->data.str)
@@ -399,21 +431,19 @@ void nereon_free_nos_options(struct nereon_nos_options *nos_opts, int nos_opts_c
  * get nos option
  */
 
-int nereon_get_nos_option(struct nereon_nos_options *nos_opts, int nos_opts_count, const char *key, nereon_config_option_t *value)
+struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_opts, int nos_opts_count,	const char *key)
 {
 	int i;
 
 	for (i = 0; i < nos_opts_count; i++) {
-		struct nereon_nos_options *opt = &nos_opts[i];
+		struct nereon_nos_option *opt = &nos_opts[i];
 
-		if (strcasecmp(opt->noc_key, key) != 0)
-			continue;
-
-		if (opt->is_set) {
-			memcpy(&value->data, &opt->data, sizeof(union nereon_config_data));
-			return 0;
+		if (strcasecmp(opt->name, key) == 0) {
+			return opt;
 		}
 	}
 
-	return -1;
+	nereon_set_err("Failed to find NOS option with name '%s'", key);
+
+	return NULL;
 }
