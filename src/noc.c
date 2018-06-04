@@ -46,7 +46,7 @@
  * free config option
  */
 
-static void free_config_options(struct nereon_noc_options *opt)
+static void free_config_options(struct nereon_noc_option *opt)
 {
 	if (opt) {
 		free_config_options(opt->childs);
@@ -80,7 +80,7 @@ static const char *convert_to_str(enum NEREON_CONFIG_TYPE type, union nereon_con
 	return str_data;
 }
 
-static void print_config_options(struct nereon_noc_options *opt, int level)
+static void print_config_options(struct nereon_noc_option *opt, int level)
 {
 	char *sp_str = NULL;
 
@@ -99,7 +99,7 @@ static void print_config_options(struct nereon_noc_options *opt, int level)
 	}
 
 	if (opt->childs) {
-		struct nereon_noc_options *p = opt->childs;
+		struct nereon_noc_option *p = opt->childs;
 
 		level++;
 		while (p) {
@@ -115,17 +115,17 @@ static void print_config_options(struct nereon_noc_options *opt, int level)
  * allocate memory for config option
  */
 
-static struct nereon_noc_options *new_noc_option()
+static struct nereon_noc_option *new_noc_option()
 {
-	struct nereon_noc_options *p;
+	struct nereon_noc_option *p;
 
-	p = (struct nereon_noc_options *)malloc(sizeof(struct nereon_noc_options));
+	p = (struct nereon_noc_option *)malloc(sizeof(struct nereon_noc_option));
 	if (!p) {
 		nereon_set_err("Could not create UCL parser");
 		return NULL;
 	}
 
-	memset(p, 0, sizeof(struct nereon_noc_options));
+	memset(p, 0, sizeof(struct nereon_noc_option));
 
 	return p;
 }
@@ -134,12 +134,12 @@ static struct nereon_noc_options *new_noc_option()
  * add config option to list
  */
 
-static void add_noc_option(struct nereon_noc_options *parent_opt, struct nereon_noc_options *opt)
+static void add_noc_option(struct nereon_noc_option *parent_opt, struct nereon_noc_option *opt)
 {
 	if (!parent_opt->childs) {
 		parent_opt->childs = opt;
 	} else {
-		struct nereon_noc_options *p = parent_opt->childs;
+		struct nereon_noc_option *p = parent_opt->childs;
 
 		while (p->next)
 			p = p->next;
@@ -152,7 +152,7 @@ static void add_noc_option(struct nereon_noc_options *parent_opt, struct nereon_
  * set value for config option
  */
 
-static int set_noc_value(const ucl_object_t *obj, struct nereon_noc_options *opt)
+static int set_noc_value(const ucl_object_t *obj, struct nereon_noc_option *opt)
 {
 	if (obj->type == UCL_INT) {
 		opt->type = NEREON_TYPE_INT;
@@ -176,14 +176,14 @@ static int set_noc_value(const ucl_object_t *obj, struct nereon_noc_options *opt
  * parse configuration options from UCL object
  */
 
-int parse_config_options(const ucl_object_t *obj, struct nereon_noc_options *parent_opt)
+int parse_config_options(const ucl_object_t *obj, struct nereon_noc_option *parent_opt)
 {
 	const ucl_object_t *cur, *tmp;
 	ucl_object_iter_t it = NULL, it_obj = NULL;
 
 	tmp = obj;
 	while ((obj = ucl_object_iterate(tmp, &it, false))) {
-		struct nereon_noc_options *opt;
+		struct nereon_noc_option *opt;
 
 		/* create HCL config from UCL object */
 		opt = new_noc_option();
@@ -221,14 +221,14 @@ int parse_config_options(const ucl_object_t *obj, struct nereon_noc_options *par
  * parse configuration options
  */
 
-int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_options **noc_opts)
+int nereon_parse_noc_options(const char *cfg_path, struct nereon_noc_option **noc_opts)
 {
 	struct ucl_parser *parser;
 	ucl_object_t *obj = NULL;
 
 	char *cfg_str;
 
-	struct nereon_noc_options root_opt;
+	struct nereon_noc_option root_opt;
 
 	int ret = -1;
 
@@ -288,7 +288,18 @@ end:
  * free configuration options
  */
 
-void nereon_free_noc_options(struct nereon_noc_options *cfg_opts)
+void nereon_free_noc_options(struct nereon_noc_option *cfg_opts)
 {
 	free_config_options(cfg_opts);
+}
+
+/*
+ * get NOC option
+ */
+
+struct nereon_noc_option *nereon_get_noc_option(struct nereon_noc_option *noc_opts, const char *cfg_key)
+{
+	
+
+	return NULL;
 }

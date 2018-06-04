@@ -46,13 +46,13 @@
  * show helper message
  */
 
-void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_count)
+void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_count)
 {
 	int max_sw_len = 0, max_desc_len = 0;
 	int i;
 
 	for (i = 0; i < nos_opts_count; i++) {
-		struct nereon_nos_options *opt = &nos_opts[i];
+		struct nereon_nos_option *opt = &nos_opts[i];
 
 		max_sw_len = max_sw_len > strlen(opt->sw_long) ? max_sw_len : strlen(opt->sw_long);
 		max_desc_len = max_desc_len > strlen(opt->desc_short) ? max_desc_len : strlen(opt->desc_short);
@@ -65,7 +65,7 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
 
 	fprintf(stdout, "Usage: %s [options]\n", getprogname());
 	for (i = 0; i < nos_opts_count; i++) {
-		struct nereon_nos_options *opt = &nos_opts[i];
+		struct nereon_nos_option *opt = &nos_opts[i];
 
 		char sw_short[3];
 
@@ -122,7 +122,7 @@ void nereon_cli_print_usage(struct nereon_nos_options *nos_opts, int nos_opts_co
  * set options from command line
  */
 
-static int set_opt_val(const char *arg, struct nereon_nos_options *opt)
+static int set_opt_val(const char *arg, struct nereon_nos_option *opt)
 {
 	if (opt->type == NEREON_TYPE_INT) {
 		int i;
@@ -150,7 +150,7 @@ static int set_opt_val(const char *arg, struct nereon_nos_options *opt)
  * parse command line
  */
 
-int nereon_cli_parse(struct nereon_nos_options *nos_opts, int nos_opts_count, int argc, char **argv)
+int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int argc, char **argv)
 {
 	int i;
 
@@ -180,20 +180,30 @@ int nereon_cli_parse(struct nereon_nos_options *nos_opts, int nos_opts_count, in
 		DEBUG_PRINT("short_switch: %s, long_switch:%s\n", sw_short, sw_long);
 
 		for (opt_idx = 0; opt_idx < nos_opts_count; opt_idx++) {
-			struct nereon_nos_options *opt = &nos_opts[opt_idx];
+			struct nereon_nos_option *opt = &nos_opts[opt_idx];
 
-			if (strcmp(sw_short, opt->sw_short) != 0 && strcmp(sw_long, opt->sw_long) != 0) {
+			if ((strlen(sw_short) > 0 && strcmp(sw_short, opt->sw_short) != 0) ||
+				(strlen(sw_long) > 0 && strcmp(sw_long, opt->sw_long) != 0)) {
 				continue;
 			}
 
+			DEBUG_PRINT("Found NOS option with name:%s, sw_short:%s, sw_long:%s, type:%d\n",
+					opt->name, opt->sw_short, opt->sw_long, opt->type);
+
+			if (opt->type == NEREON_TYPE_HELPER) {
+				nereon_cli_print_usage(nos_opts, nos_opts_count);
+				return 0;
+			}
+
 			if (opt->type == NEREON_TYPE_BOOL) {
+				found_opt = true;
 				opt->data.b = true;
 				break;
 			}
 
 			i++;
 			if (i == argc) {
-				nereon_set_err("Missing argument for switch '%s'", argv[i - 1]);
+				nereon_set_err("Missing argument for switch '%s, type:%d'", argv[i - 1]);
 				return -1;
 			}
 

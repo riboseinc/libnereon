@@ -5,7 +5,7 @@
  * libnereon NOS options
  */
 
-struct nereon_nos_options {
+struct nereon_nos_option {
 	char name[CFG_MAX_NAME];
 	enum NEREON_CONFIG_TYPE type;
 
@@ -18,7 +18,7 @@ struct nereon_nos_options {
 	char desc_long[CFG_MAX_LONG_DESC];
 
 	int cli_args_count;
-	struct nereon_nos_options *cli_args;
+	struct nereon_nos_option *cli_args;
 	char args_desc[CFG_MAX_LONG_DESC];                      /* available if option is cli argument */
 
 	bool exist_cli_default;
@@ -37,18 +37,18 @@ struct nereon_nos_options {
  * parse multiconfig NOS options
  */
 
-int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_options **nos_opts, int *nos_opts_count);
+int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_option **nos_opts, int *nos_opts_count);
 
 /*
  * free NOS options
  */
 
-void nereon_free_nos_options(struct nereon_nos_options *nos_opts, int nos_opts_count);
+void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count);
 
 /*
  * get NOS option
  */
 
-int nereon_get_nos_option(struct nereon_nos_options *nos_opts, int nos_opts_count, const char *key, nereon_config_option_t *value);
+struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_opts, int nos_opts_count,	const char *key);
 
 #endif /* __NEREON_NOS_H__ */

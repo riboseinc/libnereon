@@ -21,23 +21,13 @@ enum NEREON_CONFIG_TYPE {
 };
 
 /*
- * libnereon configuration data
- */
-
-union nereon_config_data {
-	int i;
-	char *str;
-	bool b;
-	double d;
-};
-
-/*
  * libnereon configuration option
  */
 
 typedef struct nereon_config_option {
+	const char *name;
 	enum NEREON_CONFIG_TYPE type;
-	union nereon_config_data data;
+	void *data;
 } nereon_config_option_t;
 
 /*
@@ -68,6 +58,12 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx);
  */
 
 int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv);
+
+/*
+ * Parse NOC configuration file
+ */
+
+int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath);
 
 /*
  * Print libnereon command line usage
