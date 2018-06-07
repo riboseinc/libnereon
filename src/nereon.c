@@ -103,10 +103,14 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 
 		/* get config from NOS */
 		nos_opt = nereon_get_nos_option(nos_opts, ctx->nos_opts_count, cfg_opt->name);
-		if (!nos_opt)
+		if (!nos_opt) {
+			DEBUG_PRINT("Could not get NOS option for config '%s'\n", cfg_opt->name);
 			return -1;
+		}
 
 		if (nos_opt->is_set) {
+			DEBUG_PRINT("NOS option was set for config '%s'\n", cfg_opt->name);
+
 			/* set config value from command line at first */
 			cfg_data = &nos_opt->data;
 		} else {
@@ -115,13 +119,35 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 				(noc_opt = nereon_get_noc_option(noc_opts, nos_opt->noc_key))) {
 				cfg_data = &noc_opt->data;
 			} else if (nos_opt->exist_default) {
+				DEBUG_PRINT("Setting NOS default data\n");
 				cfg_data = &nos_opt->default_data;
 			}
 		}
 
-		if (!cfg_data) {
+		if (!cfg_data && cfg_opt->mandatory) {
 			nereon_set_err("Could not get configuration for '%s'", cfg_opt->name);
 			return -1;
+		}
+
+		switch (cfg_opt->type) {
+		case NEREON_TYPE_INT:
+			cfg_opt->data = &cfg_data->i;
+			break;
+
+		case NEREON_TYPE_BOOL:
+		case NEREON_TYPE_HELPER:
+			cfg_opt->data = &cfg_data->b;
+			break;
+
+		case NEREON_TYPE_STRING:
+		case NEREON_TYPE_ARRAY:
+		case NEREON_TYPE_IPPORT:
+		case NEREON_TYPE_CONFIG:
+			*(char **)(cfg_opt->data) = cfg_data->str;
+			break;
+
+		default:
+			break;
 		}
 	}
 

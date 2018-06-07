@@ -27,6 +27,9 @@ enum NEREON_CONFIG_TYPE {
 typedef struct nereon_config_option {
 	const char *name;
 	enum NEREON_CONFIG_TYPE type;
+
+	bool mandatory;
+
 	void *data;
 } nereon_config_option_t;
 
