@@ -65,6 +65,7 @@ static void print_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_c
 		DEBUG_PRINT("\t\tlong_desc: %s\n", opt->desc_long);
 		DEBUG_PRINT("\t\tenv: %s\n", opt->desc_short);
 		DEBUG_PRINT("\t\tconfig: %s\n", opt->noc_key);
+		DEBUG_PRINT("\t\texist_default: %s\n", opt->exist_default ? "yes" : "no");
 	}
 }
 
@@ -100,8 +101,11 @@ static enum NEREON_CONFIG_TYPE parse_opt_type(const char *type_str)
 
 static int set_default_value(const ucl_object_t *obj, struct nereon_nos_option *opt)
 {
+	DEBUG_PRINT("Setting NOS default data for option '%s'\n", opt->name);
+
 	if (opt->type == NEREON_TYPE_INT && obj->type == UCL_INT) {
 		opt->default_data.i = ucl_object_toint(obj);
+		DEBUG_PRINT("\tSetting default value '%d' for option '%s'\n", opt->default_data.i, opt->name);
 	} else if ((opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT ||
 		opt->type == NEREON_TYPE_CONFIG) &&
 		obj->type == UCL_STRING) {
@@ -111,9 +115,12 @@ static int set_default_value(const ucl_object_t *obj, struct nereon_nos_option *
 		if (!str) {
 			return -1;
 		}
-		opt->data.str = str;
+
+		DEBUG_PRINT("\tSetting default value '%s' for option '%s'\n", str, opt->name);
+
+		opt->default_data.str = str;
 	} else {
-		DEBUG_PRINT("Invalid default value for config_option '%s'\n", opt->name);
+		DEBUG_PRINT("\tInvalid default value for config_option '%s'\n", opt->name);
 		return -1;
 	}
 
@@ -417,6 +424,9 @@ void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_co
 		if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT) {
 			if (opt->data.str)
 				free(opt->data.str);
+
+			if (opt->exist_default && opt->default_data.str)
+				free(opt->default_data.str);
 		}
 
 		if (opt->cli_args_count > 0) {
@@ -435,6 +445,8 @@ struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_op
 {
 	int i;
 
+	DEBUG_PRINT("Try to get NOS option for config '%s'\n", key);
+
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &nos_opts[i];
 
@@ -442,8 +454,6 @@ struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_op
 			return opt;
 		}
 	}
-
-	nereon_set_err("Failed to find NOS option with name '%s'", key);
 
 	return NULL;
 }

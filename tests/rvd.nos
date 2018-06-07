@@ -25,6 +25,8 @@ config_option "go_daemon" {
 	cmdline "description" {
 		long = "daemonize"
 	}
+
+	default = false
 }
 
 config_option "check_config" {

@@ -54,6 +54,26 @@ struct rvd_options {
 };
 
 /*
+ * print rvd config options
+ */
+
+static void print_config_options(struct rvd_options *opt)
+{
+	fprintf(stderr, "config_fpath => %s(%p)\n", opt->config_fpath, opt->config_fpath);
+	fprintf(stderr, "go_daemon => %d\n", opt->go_daemon);
+	fprintf(stderr, "check_config => %d\n", opt->check_config);
+	fprintf(stderr, "print_version => %d\n", opt->print_version);
+	fprintf(stderr, "print_help => %d\n", opt->print_help);
+	fprintf(stderr, "ovpn_bin_path => %s\n", opt->ovpn_bin_path);
+	fprintf(stderr, "ovpn_root_check => %d\n", opt->ovpn_root_check);
+	fprintf(stderr, "ovpn_use_scripts => %d\n", opt->ovpn_use_scripts);
+	fprintf(stderr, "allowed_uid => %d\n", opt->allowed_uid);
+	fprintf(stderr, "restrict_cmd_sock => %d\n", opt->restrict_cmd_sock);
+	fprintf(stderr, "log_dir_path => %s\n", opt->log_dir_path);
+	fprintf(stderr, "vpn_config_dir => %s\n", opt->vpn_config_dir);
+}
+
+/*
  * main function
  */
 
@@ -65,19 +85,21 @@ int main(int argc, char *argv[])
 	struct rvd_options rvd_opts;
 
 	struct nereon_config_option cfg_opts[] = {
-		{"config_file", NEREON_TYPE_STRING, &rvd_opts.config_fpath},
-		{"go_daemon", NEREON_TYPE_BOOL, &rvd_opts.go_daemon},
-		{"check_config", NEREON_TYPE_BOOL, &rvd_opts.check_config},
-		{"print_version", NEREON_TYPE_BOOL, &rvd_opts.print_version},
-		{"helper", NEREON_TYPE_BOOL, &rvd_opts.print_help},
-		{"openvpn_bin", NEREON_TYPE_STRING, &rvd_opts.ovpn_bin_path},
-		{"openvpn_root_check", NEREON_TYPE_BOOL, &rvd_opts.ovpn_root_check},
-		{"openvpn_updown_scripts", NEREON_TYPE_BOOL, &rvd_opts.ovpn_use_scripts},
-		{"user_id", NEREON_TYPE_INT, &rvd_opts.allowed_uid},
-		{"restrict_socket", NEREON_TYPE_BOOL, &rvd_opts.restrict_cmd_sock},
-		{"log_directory", NEREON_TYPE_STRING, &rvd_opts.log_dir_path},
-		{"vpn_config_paths", NEREON_TYPE_STRING, &rvd_opts.vpn_config_dir}
+		{"config_file", NEREON_TYPE_CONFIG, false, &rvd_opts.config_fpath},
+		{"go_daemon", NEREON_TYPE_BOOL, false, &rvd_opts.go_daemon},
+		{"check_config", NEREON_TYPE_BOOL, false, &rvd_opts.check_config},
+		{"print_version", NEREON_TYPE_BOOL, false, &rvd_opts.print_version},
+		{"helper", NEREON_TYPE_BOOL, false, &rvd_opts.print_help},
+		{"openvpn_bin", NEREON_TYPE_STRING, true, &rvd_opts.ovpn_bin_path},
+		{"openvpn_root_check", NEREON_TYPE_BOOL, false, &rvd_opts.ovpn_root_check},
+		{"openvpn_updown_scripts", NEREON_TYPE_BOOL, false, &rvd_opts.ovpn_use_scripts},
+		{"user_id", NEREON_TYPE_INT, true, &rvd_opts.allowed_uid},
+		{"restrict_socket", NEREON_TYPE_BOOL, false, &rvd_opts.restrict_cmd_sock},
+		{"log_directory", NEREON_TYPE_STRING, true, &rvd_opts.log_dir_path},
+		{"vpn_config_paths", NEREON_TYPE_STRING, true, &rvd_opts.vpn_config_dir}
 	};
+
+	int rvd_opts_count;
 
 	/* initialize nereon context */
 	ret = nereon_ctx_init(&ctx, get_nos_cfg());
@@ -89,8 +111,17 @@ int main(int argc, char *argv[])
 	memset(&rvd_opts, 0, sizeof(struct rvd_options));
 	if (nereon_parse_config_file(&ctx, NOC_CONFIG_FILE) != 0) {
 		fprintf(stderr, "Could not parse NOC configuration(err:%s)\n", nereon_get_errmsg());
-	} else if (nereon_get_config_options(&ctx, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option)) != 0) {
-		fprintf(stderr, "Could not get configuration optinos(err:%s)\n", nereon_get_errmsg());
+		nereon_ctx_finalize(&ctx);
+
+		exit(1);
+	}
+
+	rvd_opts_count = sizeof(cfg_opts) / sizeof(struct nereon_config_option);
+	ret = nereon_get_config_options(&ctx, cfg_opts, rvd_opts_count);
+	if (ret == 0) {
+		print_config_options(&rvd_opts);
+	} else {
+		fprintf(stderr, "Failed to get configuration options(err:%s)\n", nereon_get_errmsg());
 	}
 
 	/* finalize nereon context */
