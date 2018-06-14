@@ -1,9 +1,14 @@
-dist: trusty
-sudo: enabled
-group: deprecated-2017Q4
 language: c
 
-branches:
-  only:
-    - master
+compiler:
+	- gcc
+	- clang
+
+before_script:
+	- mkdir build
+	- cd build
+	- cmake ..
+
+script:
+	- make
 
