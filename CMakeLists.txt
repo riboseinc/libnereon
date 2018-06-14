@@ -26,7 +26,7 @@ endif()
 # add libucl dependency
 include(ExternalProject)
 
-ExternalProject_Add(
+ExternalProject_Add (
 	libucl
 	URL https://github.com/vstakhov/libucl/archive/0.8.1.tar.gz
 	UPDATE_COMMAND ""
@@ -39,7 +39,7 @@ ExternalProject_Add(
 	INSTALL_COMMAND make install
 )
 
-ExternalProject_Add_Step(
+ExternalProject_Add_Step (
 	libucl
 	autogen
 	COMMAND ./autogen.sh
@@ -51,5 +51,7 @@ ExternalProject_Add_Step(
 # add subdirectory
 add_subdirectory (src)
 add_subdirectory (tools)
+
+enable_testing ()
 add_subdirectory (tests)
 

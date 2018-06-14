@@ -32,7 +32,7 @@
 #include "rvd.nos.h"
 #include "nereon.h"
 
-#define NOC_CONFIG_FILE                     "tests/rvd.noc"
+#define NOC_CONFIG_FILE                     "rvd.noc"
 
 struct rvd_options {
 	char *config_fpath;
