@@ -134,14 +134,16 @@ int main(int argc, char *argv[])
 {
 	nereon_ctx_t ctx;
 
+	char *nos_base_name;
+
 	char cc_src_fpath[256], cc_hdr_fpath[256];
 	char *nos_str;
 
 	int ret;
 
 	/* check argument */
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <NOS configuration file>\n", getprogname());
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s <NOS configuration file> <NOS CC output path>\n", getprogname());
 		exit(1);
 	}
 
@@ -161,9 +163,16 @@ int main(int argc, char *argv[])
 	}
 	nereon_ctx_finalize(&ctx);
 
+	/* get basename of NOS configuration path */
+	nos_base_name = strrchr(argv[1], '/');
+	if (!nos_base_name)
+		nos_base_name = argv[1];
+	else
+		nos_base_name++;
+
 	/* write source and header file */
-	snprintf(cc_src_fpath, sizeof(cc_src_fpath), "%s.c", argv[1]);
-	snprintf(cc_hdr_fpath, sizeof(cc_hdr_fpath), "%s.h", argv[1]);
+	snprintf(cc_src_fpath, sizeof(cc_src_fpath), "%s%s.c", argv[2], nos_base_name);
+	snprintf(cc_hdr_fpath, sizeof(cc_hdr_fpath), "%s%s.h", argv[2], nos_base_name);
 
 	ret = write_cc_files(cc_src_fpath, cc_hdr_fpath, nos_str);
 	free(nos_str);
