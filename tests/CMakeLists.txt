@@ -7,18 +7,18 @@ set (
 add_custom_command (
 	OUTPUT rvd.nos.c
 	COMMAND ../tools/nos_to_cc ${CMAKE_CURRENT_SOURCE_DIR}/rvd.nos ${CMAKE_CURRENT_BINARY_DIR}/
-	COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/rvd.noc ${CMAKE_CURRENT_BINARY_DIR}/
+#	COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/rvd.noc ${CMAKE_CURRENT_BINARY_DIR}/
 	DEPENDS rvd.nos
 )
 
 add_executable (noc_test rvd.nos.c noc_test.c)
-include_directories (../src)
+include_directories (../src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries (noc_test ${LIBNEREON})
 
 add_test (NAME noc_test COMMAND noc_test)
 
 add_executable (nos_test rvd.nos.c nos_test.c)
-include_directories (../src)
+include_directories (../src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries (nos_test ${LIBNEREON})
 
 set (
