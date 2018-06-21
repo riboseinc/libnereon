@@ -1,8 +1,8 @@
 
 # libnereon library target
 file (GLOB LIBNEREON_SOURCES "*.c")
-add_library (nereon STATIC ${LIBNEREON_SOURCES})
-target_include_directories (nereon PUBLIC ${CMAKE_BINARY_DIR}/libucl/include)
+add_library (nereon_single STATIC ${LIBNEREON_SOURCES})
+target_include_directories (nereon_single PUBLIC ${CMAKE_BINARY_DIR}/libucl/include)
 
 set (
 	LIBNEREON_LIBRARY
@@ -11,15 +11,24 @@ set (
 
 set (
 	LIBUCL
-	${CMAKE_BINARY_DIR}/libucl/lib/libucl.a
+	${CMAKE_BINARY_DIR}/libucl-inst/lib/libucl.a
 )
 
 add_custom_command (
-	TARGET nereon
+	TARGET nereon_single
 	POST_BUILD
-	COMMAND libtool -static ${CMAKE_BINARY_DIR}/src/libnereon.a ${LIBUCL} -o ${LIBNEREON_LIBRARY}
+	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/src/tmp
+)
+
+add_custom_command (
+	TARGET nereon_single
+	POST_BUILD
+	COMMAND ar -x ${CMAKE_BINARY_DIR}/src/libnereon_single.a
+	COMMAND ar -x ${LIBUCL}
+	COMMAND ar -rcs ${LIBNEREON_LIBRARY} *.o
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src/tmp
 	COMMENT "Merging wih libucl.a library"
 )
 
-install (TARGETS nereon DESTINATION lib)
+install (FILES libnereon.a DESTINATION lib)
 install (FILES nereon.h DESTINATION include)
