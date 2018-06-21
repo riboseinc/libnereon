@@ -1,7 +1,7 @@
 
 # nos_to_cc executable target
 
-set (LIBNEREON_LIBRARY nereon)
+set (LIBNEREON_LIBRARY ${CMAKE_BINARY_DIR}/src/libnereon.a)
 
 add_executable (nos_to_cc nos_to_cc.c)
 include_directories (../src)
