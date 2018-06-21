@@ -33,7 +33,7 @@ ExternalProject_Add (
 	PATCH_COMMAND ""
 	BINARY_DIR "${CMAKE_BINARY_DIR}/libucl"
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/libucl"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/libucl"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/libucl-inst"
 	CONFIGURE_COMMAND ./configure --prefix=<INSTALL_DIR>
 	BUILD_COMMAND make
 	INSTALL_COMMAND make install

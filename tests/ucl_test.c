@@ -181,7 +181,7 @@ ucl_obj_dump(const ucl_object_t *obj, struct hcl_config *parent_cfg, unsigned in
 		printf ("%sucl object address: %p\n", pre + 4, obj);
 		if (obj->key != NULL) {
 			printf ("%skey: \"%s\"\n", pre, ucl_object_key (obj));
-			strlcpy(cfg->key, obj->key, sizeof(cfg->key));
+			strcpy(cfg->key, obj->key);
 		}
 		printf ("%slevel: %u\n", pre, level);
 		printf ("%scfg: %p\n", pre, cfg);
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 	int ret = -1;
 
 	if (argc != 2) {
-		fprintf(stderr, "%s <HCL file>\n", getprogname());
+		fprintf(stderr, "ucl_test <HCL file>\n");
 		exit(1);
 	}
 
