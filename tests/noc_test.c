@@ -59,7 +59,7 @@ struct rvd_options {
 
 static void print_config_options(struct rvd_options *opt)
 {
-	fprintf(stderr, "config_fpath => %s(%p)\n", opt->config_fpath, opt->config_fpath);
+	fprintf(stderr, "config_fpath => %s\n", opt->config_fpath);
 	fprintf(stderr, "go_daemon => %d\n", opt->go_daemon);
 	fprintf(stderr, "check_config => %d\n", opt->check_config);
 	fprintf(stderr, "print_version => %d\n", opt->print_version);
