@@ -1,6 +1,8 @@
 
 # Multi-configuration parser library using C
 
+[![Build Status](https://travis-ci.org/riboseinc/libnereon.svg?branch=master)](https://travis-ci.org/riboseinc/libnereon)
+
 `libnereon` is a multi-configuration parser library implemented in C.</br>
 The configuration for the library is parsed in this order:
 
