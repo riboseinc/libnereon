@@ -34,7 +34,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <ucl.h>
-
+ 
 #include "common.h"
 #include "err.h"
 #include "util.h"
@@ -63,7 +63,7 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 
 	DEBUG_PRINT("max_sw_len:%d, max_desc_len:%d\n", max_sw_len, max_desc_len);
 
-	fprintf(stdout, "Usage: %s [options]\n", getprogname());
+	fprintf(stdout, "Usage: %s [options]\n", getprogname_s());
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &nos_opts[i];
 
@@ -169,9 +169,9 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 		sw_short[0] = sw_long[0] = '\0';
 
 		if (*(argv[i]) == '-' && *(argv[i] + 1) != '-' && strlen(argv[i]) == 2) {
-			strlcpy(sw_short, argv[i] + 1, sizeof(sw_short));
+			strlcpy_s(sw_short, argv[i] + 1, sizeof(sw_short));
 		} else if (strlen(argv[i]) > 2 && strncmp(argv[i], "--", 2) == 0) {
-			strlcpy(sw_long, argv[i] + 2, sizeof(sw_long));
+			strlcpy_s(sw_long, argv[i] + 2, sizeof(sw_long));
 		} else {
 			nereon_set_err("Invalid command line option '%s'", argv[i]);
 			return -1;

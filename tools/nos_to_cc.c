@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 
 	/* check argument */
 	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <NOS configuration file> <NOS CC output path>\n", getprogname());
+		fprintf(stderr, "Usage: nos_to_cc <NOS configuration file> <NOS CC output path>\n");
 		exit(1);
 	}
 
