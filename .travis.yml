@@ -1,13 +1,13 @@
 language: c
 
 compiler:
-	- gcc
-	- clang
+  - gcc
+  - clang
 
 before_script:
-	- mkdir build
-	- cd build
-	- cmake ..
+  - mkdir build
+  - cd build
+  - cmake ..
 
 script: make && make test
 

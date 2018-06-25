@@ -30,5 +30,5 @@ add_custom_command (
 	COMMENT "Merging wih libucl.a library"
 )
 
-install (FILES libnereon.a DESTINATION lib)
+install (FILES ${LIBNEREON_LIBRARY} DESTINATION lib)
 install (FILES nereon.h DESTINATION include)
