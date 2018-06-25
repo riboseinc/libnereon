@@ -60,7 +60,7 @@ void nereon_set_err(const char *err_fmt, ...)
 	vsnprintf(msg, msg_size + 1, err_fmt, va_args);
 	va_end(va_args);
 
-	strlcpy(err_msg, msg, sizeof(err_msg));
+	strlcpy_s(err_msg, msg, sizeof(err_msg));
 
 	free(msg);
 }

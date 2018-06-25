@@ -34,22 +34,16 @@
 
 #include "util.h"
 
-#ifndef HAVE_GETPROGNAME
-
 extern const char *__progname;
 
 /* get program name */
-const char *getprogname(void)
+const char *getprogname_s(void)
 {
 	return __progname;
 }
 
-#endif
-
-#ifndef HAVE_STRLCPY
-
 /* size bounded string copy function */
-size_t strlcpy(char *dst, const char *src, size_t size)
+size_t strlcpy_s(char *dst, const char *src, size_t size)
 {
 	size_t srclen;
 
@@ -67,12 +61,8 @@ size_t strlcpy(char *dst, const char *src, size_t size)
 	return srclen;
 }
 
-#endif
-
-#ifndef HAVE_STRLCAT
-
 /* size bounded string copy function */
-size_t strlcat(char *dst, const char *src, size_t size)
+size_t strlcat_s(char *dst, const char *src, size_t size)
 {
 	size_t srclen;
 	size_t dstlen;
@@ -93,8 +83,6 @@ size_t strlcat(char *dst, const char *src, size_t size)
 
 	return (dstlen + srclen);
 }
-
-#endif
 
 /*
  * fill bytes with given charactor

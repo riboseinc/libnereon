@@ -43,8 +43,6 @@ AC_CHECK_HEADERS_ONCE([endian.h sys/endian.h machine/endian.h])
 
 AC_CHECK_HEADERS_ONCE([ucl.h])
 
-AC_CHECK_FUNCS([strlcpy strlcat getprogname])
-
 AC_ARG_WITH([ucl],
     [AS_HELP_STRING([--with-ucl=DIR],
         [root of libucl directory])],
