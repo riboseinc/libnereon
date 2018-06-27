@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, [Ribose Inc](https://www.ribose.com).
+ * Copyright (c) 2018, [Ribose Inc](https://www.ribose.com).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -137,12 +137,12 @@ static void parse_switch_options(const ucl_object_t *obj, struct nereon_nos_opti
 
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->sw_short, ucl_object_tostring(sub_obj), sizeof(opt->sw_short));
+		strcpy_s(opt->sw_short, ucl_object_tostring(sub_obj), sizeof(opt->sw_short));
 	}
 
 	sub_obj = ucl_object_lookup(obj, "long");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->sw_long, ucl_object_tostring(sub_obj), sizeof(opt->sw_long));
+		strcpy_s(opt->sw_long, ucl_object_tostring(sub_obj), sizeof(opt->sw_long));
 	}
 }
 
@@ -156,12 +156,12 @@ static void parse_desc_options(const ucl_object_t *obj, struct nereon_nos_option
 
 	sub_obj = ucl_object_lookup(obj, "short");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->desc_short, ucl_object_tostring(sub_obj), sizeof(opt->desc_short));
+		strcpy_s(opt->desc_short, ucl_object_tostring(sub_obj), sizeof(opt->desc_short));
 	}
 
 	sub_obj = ucl_object_lookup(obj, "long");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->desc_long, ucl_object_tostring(sub_obj), sizeof(opt->desc_long));
+		strcpy_s(opt->desc_long, ucl_object_tostring(sub_obj), sizeof(opt->desc_long));
 	}
 }
 
@@ -187,7 +187,7 @@ static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_o
 		/* set argument */
 		memset(&arg, 0, sizeof(struct nereon_nos_option));
 
-		strlcpy_s(arg.name, obj->key, sizeof(arg.name));
+		strcpy_s(arg.name, obj->key, sizeof(arg.name));
 		arg.type = parse_opt_type(ucl_object_tostring(sub_obj));
 
 		opt->cli_args = realloc(opt->cli_args, (opt->cli_args_count + 1) * sizeof(struct nereon_nos_option));
@@ -245,7 +245,7 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
 	const ucl_object_t *sub_obj;
 
 	/* set key */
-	strlcpy_s(opt->name, obj->key, sizeof(opt->name));
+	strcpy_s(opt->name, obj->key, sizeof(opt->name));
 
 	/* get type */
 	sub_obj = ucl_object_lookup(obj, "type");
@@ -271,13 +271,13 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
 	/* get env */
 	sub_obj = ucl_object_lookup(obj, "env");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->env, ucl_object_tostring(sub_obj), sizeof(opt->env));
+		strcpy_s(opt->env, ucl_object_tostring(sub_obj), sizeof(opt->env));
 	}
 
 	/* get config */
 	sub_obj = ucl_object_lookup(obj, "config");
 	if (sub_obj && sub_obj->type == UCL_STRING) {
-		strlcpy_s(opt->noc_key, ucl_object_tostring(sub_obj), sizeof(opt->noc_key));
+		strcpy_s(opt->noc_key, ucl_object_tostring(sub_obj), sizeof(opt->noc_key));
 	}
 
 	/* get default */

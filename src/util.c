@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, [Ribose Inc](https://www.ribose.com).
+ * Copyright (c) 2018, [Ribose Inc](https://www.ribose.com).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,7 +43,7 @@ const char *getprogname_s(void)
 }
 
 /* size bounded string copy function */
-size_t strlcpy_s(char *dst, const char *src, size_t size)
+size_t strcpy_s(char *dst, const char *src, size_t size)
 {
 	size_t srclen;
 
@@ -62,7 +62,7 @@ size_t strlcpy_s(char *dst, const char *src, size_t size)
 }
 
 /* size bounded string copy function */
-size_t strlcat_s(char *dst, const char *src, size_t size)
+size_t strcat_s(char *dst, const char *src, size_t size)
 {
 	size_t srclen;
 	size_t dstlen;
