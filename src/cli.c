@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, [Ribose Inc](https://www.ribose.com).
+ * Copyright (c) 2018, [Ribose Inc](https://www.ribose.com).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -169,9 +169,9 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 		sw_short[0] = sw_long[0] = '\0';
 
 		if (*(argv[i]) == '-' && *(argv[i] + 1) != '-' && strlen(argv[i]) == 2) {
-			strlcpy_s(sw_short, argv[i] + 1, sizeof(sw_short));
+			strcpy_s(sw_short, argv[i] + 1, sizeof(sw_short));
 		} else if (strlen(argv[i]) > 2 && strncmp(argv[i], "--", 2) == 0) {
-			strlcpy_s(sw_long, argv[i] + 2, sizeof(sw_long));
+			strcpy_s(sw_long, argv[i] + 2, sizeof(sw_long));
 		} else {
 			nereon_set_err("Invalid command line option '%s'", argv[i]);
 			return -1;

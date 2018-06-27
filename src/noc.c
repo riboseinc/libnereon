@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, [Ribose Inc](https://www.ribose.com).
+ * Copyright (c) 2018, [Ribose Inc](https://www.ribose.com).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,9 +71,9 @@ static const char *convert_to_str(enum NEREON_CONFIG_TYPE type, union nereon_con
 	} else if (type == NEREON_TYPE_FLOAT) {
 		snprintf(str_data, sizeof(str_data), "%f", data->d);
 	} else if (type == NEREON_TYPE_STRING) {
-		strlcpy_s(str_data, data->str, sizeof(str_data));
+		strcpy_s(str_data, data->str, sizeof(str_data));
 	} else if (type == NEREON_TYPE_BOOL) {
-		strlcpy_s(str_data, data->b ? "true" : "false", sizeof(str_data));
+		strcpy_s(str_data, data->b ? "true" : "false", sizeof(str_data));
 	} else
 		str_data[0] = '\0';
 
@@ -194,7 +194,7 @@ int parse_config_options(const ucl_object_t *obj, struct nereon_noc_option *pare
 		add_noc_option(parent_opt, opt);
 
 		if (obj->key != NULL) {
-			strlcpy_s(opt->key, obj->key, sizeof(opt->key));
+			strcpy_s(opt->key, obj->key, sizeof(opt->key));
 		}
 
 		if (obj->type == UCL_OBJECT || obj->type == UCL_ARRAY) {

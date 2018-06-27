@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, [Ribose Inc](https://www.ribose.com).
+ * Copyright (c) 2018, [Ribose Inc](https://www.ribose.com).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@
 #include <stdarg.h>
 
 #include "common.h"
+#include "util.h"
 #include "err.h"
 
 static char err_msg[CFG_MAX_ERR_MSG];
@@ -60,7 +61,7 @@ void nereon_set_err(const char *err_fmt, ...)
 	vsnprintf(msg, msg_size + 1, err_fmt, va_args);
 	va_end(va_args);
 
-	strlcpy_s(err_msg, msg, sizeof(err_msg));
+	strcpy_s(err_msg, msg, sizeof(err_msg));
 
 	free(msg);
 }
