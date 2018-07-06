@@ -4,6 +4,9 @@ cmake_minimum_required (VERSION 2.8.11)
 project (libnereon)
 set (CMAKE_BUILD_TYPE Release)
 
+# set libnereon version
+set (LIBNEREON_VERSION 0.9.2)
+
 # check functions
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 

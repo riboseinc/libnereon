@@ -106,6 +106,10 @@ static int set_default_value(const ucl_object_t *obj, struct nereon_nos_option *
 	if (opt->type == NEREON_TYPE_INT && obj->type == UCL_INT) {
 		opt->default_data.i = ucl_object_toint(obj);
 		DEBUG_PRINT("\tSetting default value '%d' for option '%s'\n", opt->default_data.i, opt->name);
+	} else if (opt->type == NEREON_TYPE_BOOL && obj->type == UCL_BOOLEAN) {
+		opt->default_data.b = ucl_object_toboolean(obj);
+		DEBUG_PRINT("\tSetting default value '%s' for option '%s'\n",
+			opt->default_data.b ? "true" : "false", opt->name);
 	} else if ((opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT ||
 		opt->type == NEREON_TYPE_CONFIG) &&
 		obj->type == UCL_STRING) {

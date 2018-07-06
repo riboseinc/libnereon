@@ -12,8 +12,8 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -132,7 +132,10 @@ static int set_opt_val(const char *arg, struct nereon_nos_option *opt)
 			return -1;
 		}
 		opt->data.i = i;
-	} else if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT) {
+
+		DEBUG_PRINT("setting value '%d' for option '%s'\n", i, opt->name);
+	} else if (opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT ||
+		opt->type == NEREON_TYPE_CONFIG) {
 		char *str;
 
 		str = strdup(arg);
@@ -140,6 +143,8 @@ static int set_opt_val(const char *arg, struct nereon_nos_option *opt)
 			return -1;
 		}
 		opt->data.str = str;
+
+		DEBUG_PRINT("setting value '%s' for option '%s'\n", str, opt->name);
 	}
 	opt->is_set = true;
 
@@ -196,8 +201,12 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 			}
 
 			if (opt->type == NEREON_TYPE_BOOL) {
+				DEBUG_PRINT("Setting 'true' to option '%s'\n", opt->name);
+
 				found_opt = true;
 				opt->data.b = true;
+				opt->is_set = true;
+
 				break;
 			}
 

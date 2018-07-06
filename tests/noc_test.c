@@ -108,6 +108,16 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	/* print command line usage */
+	if (nereon_parse_cmdline(&ctx, argc, argv) != 0) {
+		fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
+		nereon_print_usage(&ctx);
+
+		nereon_ctx_finalize(&ctx);
+
+		exit(1);
+	}
+
 	memset(&rvd_opts, 0, sizeof(struct rvd_options));
 	if (nereon_parse_config_file(&ctx, NOC_CONFIG_FILE) != 0) {
 		fprintf(stderr, "Could not parse NOC configuration(err:%s)\n", nereon_get_errmsg());
