@@ -266,11 +266,9 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
 
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "cmdline");
-	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		nereon_set_err("Could not find 'cmdline' key for config '%s'", opt->name);
-		return -1;
+	if (sub_obj && sub_obj->type == UCL_OBJECT) {
+		parse_cmdline_options(sub_obj, opt);
 	}
-	parse_cmdline_options(sub_obj, opt);
 
 	/* get env */
 	sub_obj = ucl_object_lookup(obj, "env");
