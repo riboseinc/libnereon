@@ -60,7 +60,7 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx);
  * Parse command line arguments
  */
 
-int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv);
+int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit);
 
 /*
  * Parse NOC configuration file

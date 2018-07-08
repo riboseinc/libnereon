@@ -6,7 +6,7 @@ set (
 
 add_custom_command (
 	OUTPUT rvd.nos.c
-	COMMAND ../tools/nos2cc ${CMAKE_CURRENT_SOURCE_DIR}/rvd.nos ${CMAKE_CURRENT_BINARY_DIR}/
+	COMMAND ../tools/nos2cc ${CMAKE_CURRENT_SOURCE_DIR}/rvd.nos ${CMAKE_CURRENT_BINARY_DIR}/ rvd
 	COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/rvd.noc ${CMAKE_CURRENT_BINARY_DIR}/ 2>/dev/null || :
 	DEPENDS rvd.nos
 )

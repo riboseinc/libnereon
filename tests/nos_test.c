@@ -40,17 +40,21 @@ int main(int argc, char *argv[])
 {
 	nereon_ctx_t ctx;
 	int ret;
+	bool require_exit = false;
 
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&ctx, get_nos_cfg());
+	ret = nereon_ctx_init(&ctx, get_rvd_nos_cfg());
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		return -1;
 	}
 
 	/* print command line usage */
-	if (nereon_parse_cmdline(&ctx, argc, argv) != 0) {
-		fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
+	ret = nereon_parse_cmdline(&ctx, argc, argv, &require_exit);
+	if (ret != 0 || require_exit) {
+		if (ret != 0)
+			fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
+
 		nereon_print_usage(&ctx);
 	}
 

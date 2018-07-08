@@ -5,7 +5,7 @@
  * parse command line
  */
 
-int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int argc, char **argv);
+int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int argc, char **argv, bool *require_exit);
 
 /*
  * print command line usage

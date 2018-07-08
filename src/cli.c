@@ -155,7 +155,7 @@ static int set_opt_val(const char *arg, struct nereon_nos_option *opt)
  * parse command line
  */
 
-int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int argc, char **argv)
+int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int argc, char **argv, bool *require_exit)
 {
 	int i;
 
@@ -196,7 +196,9 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 					opt->name, opt->sw_short, opt->sw_long, opt->type);
 
 			if (opt->type == NEREON_TYPE_HELPER) {
-				nereon_cli_print_usage(nos_opts, nos_opts_count);
+				DEBUG_PRINT("Help option is enabled\n");
+				*require_exit = true;
+
 				return 0;
 			}
 
