@@ -20,7 +20,7 @@ nos_test_LDADD = -lnereon
 nos_test_LDFLAGS = $(test_common_ldflags)
 
 rvd.nos.c: rvd.nos
-	$(top_srcdir)/tools/nos_to_cc rvd.nos
+	$(top_srcdir)/tools/nos2cc rvd.nos
 
 clean-local:
 	rm -rf rvd.nos.*

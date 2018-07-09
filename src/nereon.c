@@ -124,19 +124,23 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 			}
 		}
 
-		if (!cfg_data && cfg_opt->mandatory) {
-			nereon_set_err("Could not get configuration for '%s'", cfg_opt->name);
-			return -1;
+		if (!cfg_data) {
+			if (cfg_opt->mandatory) {
+				nereon_set_err("Could not get configuration for '%s'", cfg_opt->name);
+				return -1;
+			}
+
+			continue;
 		}
 
 		switch (cfg_opt->type) {
 		case NEREON_TYPE_INT:
-			cfg_opt->data = &cfg_data->i;
+			*(int *)(cfg_opt->data) = cfg_data->i;
 			break;
 
 		case NEREON_TYPE_BOOL:
 		case NEREON_TYPE_HELPER:
-			cfg_opt->data = &cfg_data->b;
+			*(bool *)(cfg_opt->data) = cfg_data->b;
 			break;
 
 		case NEREON_TYPE_STRING:
@@ -158,11 +162,11 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
  * Parse command line arguments
  */
 
-int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv)
+int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit)
 {
 	struct nereon_nos_option *nos_opts = (struct nereon_nos_option *)ctx->nos_opts;
 
-	return nereon_cli_parse(nos_opts, ctx->nos_opts_count, argc, argv);
+	return nereon_cli_parse(nos_opts, ctx->nos_opts_count, argc, argv, require_exit);
 }
 
 /*

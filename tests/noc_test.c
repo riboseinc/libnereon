@@ -60,15 +60,15 @@ struct rvd_options {
 static void print_config_options(struct rvd_options *opt)
 {
 	fprintf(stderr, "config_fpath => %s\n", opt->config_fpath);
-	fprintf(stderr, "go_daemon => %d\n", opt->go_daemon);
-	fprintf(stderr, "check_config => %d\n", opt->check_config);
-	fprintf(stderr, "print_version => %d\n", opt->print_version);
-	fprintf(stderr, "print_help => %d\n", opt->print_help);
+	fprintf(stderr, "go_daemon => %s\n", opt->go_daemon ? "true" : "false");
+	fprintf(stderr, "check_config => %s\n", opt->check_config ? "true" : "false");
+	fprintf(stderr, "print_version => %s\n", opt->print_version ? "true" : "false");
+	fprintf(stderr, "print_help => %s\n", opt->print_help ? "true" : "false");
 	fprintf(stderr, "ovpn_bin_path => %s\n", opt->ovpn_bin_path);
-	fprintf(stderr, "ovpn_root_check => %d\n", opt->ovpn_root_check);
-	fprintf(stderr, "ovpn_use_scripts => %d\n", opt->ovpn_use_scripts);
+	fprintf(stderr, "ovpn_root_check => %s\n", opt->ovpn_root_check ? "true" : "false");
+	fprintf(stderr, "ovpn_use_scripts => %s\n", opt->ovpn_use_scripts ? "true" : "false");
 	fprintf(stderr, "allowed_uid => %d\n", opt->allowed_uid);
-	fprintf(stderr, "restrict_cmd_sock => %d\n", opt->restrict_cmd_sock);
+	fprintf(stderr, "restrict_cmd_sock => %s\n", opt->restrict_cmd_sock ? "true" : "false");
 	fprintf(stderr, "log_dir_path => %s\n", opt->log_dir_path);
 	fprintf(stderr, "vpn_config_dir => %s\n", opt->vpn_config_dir);
 }
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
 {
 	nereon_ctx_t ctx;
 	int ret;
+	bool require_exit = false;
 
 	struct rvd_options rvd_opts;
 
@@ -102,10 +103,22 @@ int main(int argc, char *argv[])
 	int rvd_opts_count;
 
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&ctx, get_nos_cfg());
+	ret = nereon_ctx_init(&ctx, get_rvd_nos_cfg());
 	if (ret != 0) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		exit(1);
+	}
+
+	/* print command line usage */
+	ret = nereon_parse_cmdline(&ctx, argc, argv, &require_exit);
+	if (ret != 0 || require_exit) {
+		if (ret != 0)
+			fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
+
+		nereon_print_usage(&ctx);
+		nereon_ctx_finalize(&ctx);
+
+		exit(ret);
 	}
 
 	memset(&rvd_opts, 0, sizeof(struct rvd_options));

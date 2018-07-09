@@ -100,7 +100,8 @@ FILE *fopen_wsafe(const char *fpath)
  * write source and header file
  */
 
-static int write_cc_files(const char *src_fpath, const char *hdr_fpath, const char *nos_str)
+static int write_cc_files(const char *src_fpath, const char *hdr_fpath,
+		const char *func_name_prefix, const char *nos_str)
 {
 	FILE *src_fp, *hdr_fp;
 	const char *hdr_fname, *p;
@@ -118,7 +119,7 @@ static int write_cc_files(const char *src_fpath, const char *hdr_fpath, const ch
 		return -1;
 
 	fprintf(src_fp, "#include \"%s\"\n\n", hdr_fname);
-	fprintf(src_fp, "static const char *g_nos_cfg = \"");
+	fprintf(src_fp, "static const char *g_%s_nos_cfg = \"", func_name_prefix);
 
 	p = nos_str;
 	while (*p != '\0') {
@@ -133,7 +134,8 @@ static int write_cc_files(const char *src_fpath, const char *hdr_fpath, const ch
 		p++;
 	}
 	fprintf(src_fp, "\";\n\n");
-	fprintf(src_fp, "const char *get_nos_cfg(void)\n{\n\treturn g_nos_cfg;\n}\n");
+	fprintf(src_fp, "const char *get_%s_nos_cfg(void)\n{\n\treturn g_%s_nos_cfg;\n}\n",
+			func_name_prefix, func_name_prefix);
 
 	fclose(src_fp);
 
@@ -144,8 +146,7 @@ static int write_cc_files(const char *src_fpath, const char *hdr_fpath, const ch
 		return -1;
 	}
 
-	fprintf(hdr_fp, "\nconst char *get_nos_cfg(void);\n");
-
+	fprintf(hdr_fp, "\nconst char *get_%s_nos_cfg(void);\n", func_name_prefix);
 	fclose(hdr_fp);
 
 	return 0;
@@ -167,8 +168,8 @@ int main(int argc, char *argv[])
 	int ret;
 
 	/* check argument */
-	if (argc != 3) {
-		fprintf(stderr, "Usage: nos_to_cc <NOS configuration file> <NOS CC output path>\n");
+	if (argc != 4) {
+		fprintf(stderr, "Usage: nos_to_cc <NOS configuration file> <NOS CC output path> <prefix of function name>\n");
 		exit(1);
 	}
 
@@ -199,7 +200,7 @@ int main(int argc, char *argv[])
 	snprintf(cc_src_fpath, sizeof(cc_src_fpath), "%s%s.c", argv[2], nos_base_name);
 	snprintf(cc_hdr_fpath, sizeof(cc_hdr_fpath), "%s%s.h", argv[2], nos_base_name);
 
-	ret = write_cc_files(cc_src_fpath, cc_hdr_fpath, nos_str);
+	ret = write_cc_files(cc_src_fpath, cc_hdr_fpath, argv[3], nos_str);
 	free(nos_str);
 
 	if (ret != 0) {

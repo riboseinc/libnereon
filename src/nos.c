@@ -106,6 +106,10 @@ static int set_default_value(const ucl_object_t *obj, struct nereon_nos_option *
 	if (opt->type == NEREON_TYPE_INT && obj->type == UCL_INT) {
 		opt->default_data.i = ucl_object_toint(obj);
 		DEBUG_PRINT("\tSetting default value '%d' for option '%s'\n", opt->default_data.i, opt->name);
+	} else if (opt->type == NEREON_TYPE_BOOL && obj->type == UCL_BOOLEAN) {
+		opt->default_data.b = ucl_object_toboolean(obj);
+		DEBUG_PRINT("\tSetting default value '%s' for option '%s'\n",
+			opt->default_data.b ? "true" : "false", opt->name);
 	} else if ((opt->type == NEREON_TYPE_STRING || opt->type == NEREON_TYPE_IPPORT ||
 		opt->type == NEREON_TYPE_CONFIG) &&
 		obj->type == UCL_STRING) {
@@ -262,11 +266,9 @@ static int parse_config_option(const ucl_object_t *obj, struct nereon_nos_option
 
 	/* get switch */
 	sub_obj = ucl_object_lookup(obj, "cmdline");
-	if (!sub_obj || sub_obj->type != UCL_OBJECT) {
-		nereon_set_err("Could not find 'cmdline' key for config '%s'", opt->name);
-		return -1;
+	if (sub_obj && sub_obj->type == UCL_OBJECT) {
+		parse_cmdline_options(sub_obj, opt);
 	}
-	parse_cmdline_options(sub_obj, opt);
 
 	/* get env */
 	sub_obj = ucl_object_lookup(obj, "env");
