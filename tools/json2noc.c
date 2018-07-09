@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'o':
-				noc_fpath = optarg;
+				noc_fpath = strdup(optarg);
 				break;
 
 			case 'h':
@@ -222,8 +222,6 @@ int main(int argc, char *argv[])
 	ucl_str = ucl_object_emit(u_obj, UCL_EMIT_CONFIG);
 	if (ucl_str) {
 		fprintf(noc_fp, "%s", (char *)ucl_str);
-		fclose(noc_fp);
-
 		free(ucl_str);
 	}
 
