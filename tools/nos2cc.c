@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 
 	/* check argument */
 	if (argc != 4) {
-		fprintf(stderr, "Usage: nos_to_cc <NOS configuration file> <NOS CC output path> <prefix of function name>\n");
+		fprintf(stderr, "Usage: nos2cc <NOS configuration file> <NOS CC output path> <prefix of function name>\n");
 		exit(1);
 	}
 
