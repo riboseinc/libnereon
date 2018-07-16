@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "nereon_config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -80,6 +78,20 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx)
 
 	nereon_free_noc_options(noc_opts);
 	nereon_free_nos_options(nos_opts, ctx->nos_opts_count);
+}
+
+/*
+ * get libnereon version
+ */
+
+const char *nereon_get_version_info(void)
+{
+	static char version_info[128];
+
+	snprintf(version_info, sizeof(version_info), "version:%s, git commit:%s",
+			STRINGIZE_VALUE_OF(LIBNEREON_VERSION), STRINGIZE_VALUE_OF(GIT_COMMIT_HASH));
+
+	return version_info;
 }
 
 /*

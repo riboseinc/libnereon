@@ -109,6 +109,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	fprintf(stdout, "libnereon version_info: %s\n", nereon_get_version_info());
+
 	/* print command line usage */
 	ret = nereon_parse_cmdline(&ctx, argc, argv, &require_exit);
 	if (ret != 0 || require_exit) {

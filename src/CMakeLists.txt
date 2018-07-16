@@ -2,7 +2,7 @@
 # libnereon library target
 file (GLOB LIBNEREON_SOURCES "*.c")
 add_library (nereon_single STATIC ${LIBNEREON_SOURCES})
-target_include_directories (nereon_single PUBLIC ${CMAKE_BINARY_DIR}/libucl/include)
+target_include_directories (nereon_single PUBLIC ${CMAKE_BINARY_DIR}/libucl/include ${CMAKE_BINARY_DIR})
 
 set (
 	LIBNEREON_LIBRARY

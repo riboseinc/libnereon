@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+#define STRINGIZE(x)               #x
+#define STRINGIZE_VALUE_OF(x)      STRINGIZE(x)
+
 /*
  * libnereon configuration types
  */
@@ -55,6 +58,12 @@ int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg);
  */
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx);
+
+/*
+ * get libnereon version
+ */
+
+const char *nereon_get_version_info(void);
 
 /*
  * Parse command line arguments

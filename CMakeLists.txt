@@ -5,7 +5,22 @@ project (libnereon)
 set (CMAKE_BUILD_TYPE Release)
 
 # set libnereon version
-set (LIBNEREON_VERSION 0.9.2)
+set (LIBNEREON_VERSION "0.9.4")
+
+execute_process(
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+set (GIT_COMMIT_HASH ${GIT_COMMIT_HASH})
+
+# set configuration file
+configure_file (
+	"${PROJECT_SOURCE_DIR}/nereon_config.h.in"
+	"${PROJECT_BINARY_DIR}/nereon_config.h"
+)
 
 # check functions
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
