@@ -7,7 +7,7 @@ config_option "config_file" {
 	}
 
 	cmdline "description" {
-		short = "config file"
+		short = "<config file>"
 		long = "set configuration file"
 	}
 
@@ -73,7 +73,7 @@ config_option "openvpn_bin" {
 	}
 
 	cmdline "description" {
-		short = "OpenVPN binary path"
+		short = <OpenVPN binary path>
 		long = "specify OpenVPN binary path"
 	}
 
@@ -123,7 +123,7 @@ config_option "user_id" {
 	}
 
 	cmdline "description" {
-		short = "User ID"
+		short = <User ID>
 		long = "specify User ID for RVC process"
 	}
 
@@ -157,7 +157,7 @@ config_option "log_directory" {
 	}
 
 	cmdline "description" {
-		short = "log directory"
+		short = "<log directory>"
 		long = "specify the log directory of RVD process"
 	}
 
@@ -175,7 +175,7 @@ config_option "vpn_config_paths" {
 	}
 
 	cmdline "description" {
-		short = "VPN config directory"
+		short = "<VPN config directory>"
 		long = "specify the directory path of VPN configurations"
 	}
 

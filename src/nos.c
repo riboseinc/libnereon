@@ -187,6 +187,8 @@ static void parse_cmdline_arguments(const ucl_object_t *obj, struct nereon_nos_o
 		/* set argument */
 		memset(&arg, 0, sizeof(struct nereon_nos_option));
 
+		DEBUG_PRINT("NOS: Adding argument '%s' to %s\n", obj->key, opt->name);
+
 		strcpy_s(arg.name, obj->key, sizeof(arg.name));
 		arg.type = parse_opt_type(ucl_object_tostring(sub_obj));
 

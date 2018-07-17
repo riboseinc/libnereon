@@ -47,6 +47,7 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 	int max_sw_len = 0, max_desc_len = 0;
 	int i;
 
+	/* get max len */
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &nos_opts[i];
 
@@ -69,8 +70,6 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 		int padding_sw_len, padding_desc_len;
 
 		char *cli_lopt_prefix = strlen(opt->sw_short) > 0 ? "|--" : "--";
-		char *short_desc_prefix = opt->exist_cli_default ? "[" : "<";
-		char *short_desc_tail = opt->exist_cli_default ? "]" : ">";
 
 		if (strlen(opt->sw_short) == 0) {
 			memset(sw_short, 0x20, sizeof(sw_short));
@@ -88,17 +87,15 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 		padding_desc = fill_bytes(' ', max_desc_len - strlen(opt->desc_short));
 
 		if (opt->type != NEREON_TYPE_BOOL) {
-			fprintf(stdout, "  %s%s%s%s%s%s%s%s: %s\n",
+			fprintf(stdout, "  %s%s%s%s %s%s: %s\n",
 				sw_short,
 				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
 				opt->sw_long, padding_sw,
-				strlen(opt->desc_short) > 0 ? short_desc_prefix : " ",
 				opt->desc_short,
-				strlen(opt->desc_short) > 0 ? short_desc_tail : " ",
 				padding_desc,
 				opt->desc_long);
 		} else {
-			fprintf(stdout, "  %s%s%s%s%s  : %s\n",
+			fprintf(stdout, "  %s%s%s%s%s : %s\n",
 				sw_short,
 				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
 				opt->sw_long, padding_sw,
