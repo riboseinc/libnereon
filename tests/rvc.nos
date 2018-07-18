@@ -7,12 +7,8 @@ config_option "connect" {
 	}
 
 	cmdline "description" {
-		short = "<all|connection name> [--json]"
+		short = "<all|connection name>"
 		long = "connect to a VPN with given name (default:all)"
-	}
-
-	cmdline arguments json {
-		type = bool
 	}
 
 	default = "all"
@@ -26,12 +22,8 @@ config_option "disconnect" {
 	}
 
 	cmdline "description" {
-		short = "<all|connection name> [--json]"
+		short = "<all|connection name>"
 		long = "disconnect VPN with given name (default:all)"
-	}
-
-	cmdline "arguments" "json" {
-		type = "bool"
 	}
 
 	default = "all"
@@ -45,12 +37,8 @@ config_option "reconnect" {
 	}
 
 	cmdline "description" {
-		short = "<all|connection name> [--json]"
+		short = "<all|connection name>"
 		long = "reconnect VPN with given name (default:all)"
-	}
-
-	cmdline "arguments" "json" {
-		type = "bool"
 	}
 
 	default = "all"
@@ -64,15 +52,23 @@ config_option "status" {
 	}
 
 	cmdline "description" {
-		short = "<all|connection name> [--json]"
+		short = "<all|connection name>"
 		long = "get status of VPN connection with given name (default:all)"
 	}
 
-	cmdline "arguments" "json" {
-		type = "bool"
+	default = "all"
+}
+
+config_option "json" {
+	type = "bool"
+
+	cmdline "switch" {
+		long = "json"
 	}
 
-	default = "all"
+	cmdline "description" {
+		long = "display output as JSON format"
+	}
 }
 
 config_option "edit" {
@@ -121,7 +117,7 @@ config_option "remove" {
 }
 
 config_option "import" {
-	type = "string"
+	type = "bool"
 
 	cmdline "switch" {
 		long = "import"
@@ -159,7 +155,7 @@ config_option "reload" {
 }
 
 config_option "dns-override" {
-	type = "string"
+	type = "bool"
 
 	cmdline "switch" {
 		long = "dns-override"
@@ -183,7 +179,7 @@ config_option "dns-override" {
 	}
 
 	cmdline "description" {
-		short = "<--enable|--disable|--status> [DNS server IP list]"
+		short = "<--enable <DNS serve IP list>|--disable|--status>"
 		long = "override DNS settings (sudo required)"
 	}
 }
@@ -225,7 +221,7 @@ config_option "version" {
 	}
 }
 
-config_option "helper" {
+config_option "help" {
 	type = "helper"
 
 	cmdline "switch" {

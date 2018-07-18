@@ -9,7 +9,7 @@ struct nereon_nos_option {
 	char name[CFG_MAX_NAME];
 	enum NEREON_CONFIG_TYPE type;
 
-	bool is_set;
+	bool is_cli_set;
 
 	char sw_short[2];
 	char sw_long[CFG_MAX_LONG_SWITCH];
@@ -19,7 +19,6 @@ struct nereon_nos_option {
 
 	int cli_args_count;
 	struct nereon_nos_option *cli_args;
-	char args_desc[CFG_MAX_LONG_DESC];                      /* available if option is cli argument */
 
 	bool exist_cli_default;
 	union nereon_config_data cli_default_data;
@@ -49,6 +48,7 @@ void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_co
  * get NOS option
  */
 
-struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_opts, int nos_opts_count,	const char *key);
+struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_opts, int nos_opts_count,
+		const char *key, bool cli_parse);
 
 #endif /* __NEREON_NOS_H__ */

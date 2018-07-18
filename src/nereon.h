@@ -32,6 +32,7 @@ typedef struct nereon_config_option {
 	enum NEREON_CONFIG_TYPE type;
 
 	bool mandatory;
+	bool *is_cli_set;
 
 	void *data;
 } nereon_config_option_t;

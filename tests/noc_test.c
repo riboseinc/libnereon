@@ -86,18 +86,18 @@ int main(int argc, char *argv[])
 	struct rvd_options rvd_opts;
 
 	struct nereon_config_option cfg_opts[] = {
-		{"config_file", NEREON_TYPE_CONFIG, false, &rvd_opts.config_fpath},
-		{"go_daemon", NEREON_TYPE_BOOL, false, &rvd_opts.go_daemon},
-		{"check_config", NEREON_TYPE_BOOL, false, &rvd_opts.check_config},
-		{"print_version", NEREON_TYPE_BOOL, false, &rvd_opts.print_version},
-		{"helper", NEREON_TYPE_BOOL, false, &rvd_opts.print_help},
-		{"openvpn_bin", NEREON_TYPE_STRING, true, &rvd_opts.ovpn_bin_path},
-		{"openvpn_root_check", NEREON_TYPE_BOOL, false, &rvd_opts.ovpn_root_check},
-		{"openvpn_updown_scripts", NEREON_TYPE_BOOL, false, &rvd_opts.ovpn_use_scripts},
-		{"user_id", NEREON_TYPE_INT, true, &rvd_opts.allowed_uid},
-		{"restrict_socket", NEREON_TYPE_BOOL, false, &rvd_opts.restrict_cmd_sock},
-		{"log_directory", NEREON_TYPE_STRING, true, &rvd_opts.log_dir_path},
-		{"vpn_config_paths", NEREON_TYPE_STRING, true, &rvd_opts.vpn_config_dir}
+		{"config_file", NEREON_TYPE_CONFIG, false, NULL, &rvd_opts.config_fpath},
+		{"go_daemon", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.go_daemon},
+		{"check_config", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.check_config},
+		{"print_version", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.print_version},
+		{"helper", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.print_help},
+		{"openvpn_bin", NEREON_TYPE_STRING, true, NULL, &rvd_opts.ovpn_bin_path},
+		{"openvpn_root_check", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.ovpn_root_check},
+		{"openvpn_updown_scripts", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.ovpn_use_scripts},
+		{"user_id", NEREON_TYPE_INT, true, NULL, &rvd_opts.allowed_uid},
+		{"restrict_socket", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.restrict_cmd_sock},
+		{"log_directory", NEREON_TYPE_STRING, true, NULL, &rvd_opts.log_dir_path},
+		{"vpn_config_paths", NEREON_TYPE_STRING, true, NULL, &rvd_opts.vpn_config_dir}
 	};
 
 	int rvd_opts_count;

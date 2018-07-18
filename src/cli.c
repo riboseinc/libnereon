@@ -86,22 +86,13 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 					max_sw_len + 1;
 		padding_desc = fill_bytes(' ', max_desc_len - strlen(opt->desc_short));
 
-		if (opt->type != NEREON_TYPE_BOOL) {
-			fprintf(stdout, "  %s%s%s%s %s%s: %s\n",
-				sw_short,
-				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
-				opt->sw_long, padding_sw,
-				opt->desc_short,
-				padding_desc,
-				opt->desc_long);
-		} else {
-			fprintf(stdout, "  %s%s%s%s%s : %s\n",
-				sw_short,
-				strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
-				opt->sw_long, padding_sw,
-				padding_desc,
-				opt->desc_long);
-		}
+		fprintf(stdout, "  %s%s%s%s %s%s: %s\n",
+			sw_short,
+			strlen(opt->sw_long) > 0 ? cli_lopt_prefix : " ",
+			opt->sw_long, padding_sw,
+			opt->desc_short,
+			padding_desc,
+			opt->desc_long);
 
 		if (padding_sw)
 			free(padding_sw);
@@ -139,7 +130,7 @@ static int set_opt_val(const char *arg, struct nereon_nos_option *opt)
 
 		DEBUG_PRINT("setting value '%s' for option '%s'\n", str, opt->name);
 	}
-	opt->is_set = true;
+	opt->is_cli_set = true;
 
 	return 0;
 }
@@ -161,67 +152,65 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 	DEBUG_PRINT("Parsing command line arguments\n");
 
 	for (i = 1; i < argc; i++) {
-		int opt_idx;
-		bool found_opt = false;
+		struct nereon_nos_option *opt;
+		bool is_sw_short = false;
 
 		sw_short[0] = sw_long[0] = '\0';
 
 		if (*(argv[i]) == '-' && *(argv[i] + 1) != '-' && strlen(argv[i]) == 2) {
 			strcpy_s(sw_short, argv[i] + 1, sizeof(sw_short));
+			is_sw_short = true;
 		} else if (strlen(argv[i]) > 2 && strncmp(argv[i], "--", 2) == 0) {
 			strcpy_s(sw_long, argv[i] + 2, sizeof(sw_long));
 		} else {
+			DEBUG_PRINT("Invalid command line option '%s'", argv[i]);
 			nereon_set_err("Invalid command line option '%s'", argv[i]);
+
 			return -1;
 		}
 
 		DEBUG_PRINT("short_switch: %s, long_switch:%s\n", sw_short, sw_long);
 
-		for (opt_idx = 0; opt_idx < nos_opts_count; opt_idx++) {
-			struct nereon_nos_option *opt = &nos_opts[opt_idx];
-
-			if ((strlen(sw_short) > 0 && strcmp(sw_short, opt->sw_short) != 0) ||
-				(strlen(sw_long) > 0 && strcmp(sw_long, opt->sw_long) != 0)) {
-				continue;
-			}
-
-			DEBUG_PRINT("Found NOS option with name:%s, sw_short:%s, sw_long:%s, type:%d\n",
-					opt->name, opt->sw_short, opt->sw_long, opt->type);
-
-			if (opt->type == NEREON_TYPE_HELPER) {
-				DEBUG_PRINT("Help option is enabled\n");
-				*require_exit = true;
-
-				return 0;
-			}
-
-			if (opt->type == NEREON_TYPE_BOOL) {
-				DEBUG_PRINT("Setting 'true' to option '%s'\n", opt->name);
-
-				found_opt = true;
-				opt->data.b = true;
-				opt->is_set = true;
-
-				break;
-			}
-
-			i++;
-			if (i == argc) {
-				nereon_set_err("Missing argument for switch '%s, type:%d'", argv[i - 1]);
-				return -1;
-			}
-
-			if (set_opt_val(argv[i], opt) != 0) {
-				nereon_set_err("Invalid argument for switch '%s'", argv[i - 1]);
-				return -1;
-			}
-			found_opt = true;
-		}
-
-		if (!found_opt) {
+		/* get NOS option for switch */
+		opt = nereon_get_nos_option(nos_opts, nos_opts_count, is_sw_short ? sw_short : sw_long, true);
+		if (!opt) {
+			DEBUG_PRINT("Invalid command line switch '%s'\n", argv[i]);
 			nereon_set_err("Invalid command line switch '%s'", argv[i]);
+
 			return -1;
 		}
+
+		DEBUG_PRINT("Found NOS option with name:%s, sw_short:%s, sw_long:%s, type:%d\n",
+				opt->name, opt->sw_short, opt->sw_long, opt->type);
+
+		if (opt->type == NEREON_TYPE_HELPER) {
+			DEBUG_PRINT("Help option is enabled\n");
+			*require_exit = true;
+
+			return 0;
+		}
+
+		if (opt->type == NEREON_TYPE_BOOL) {
+			DEBUG_PRINT("Setting 'true' to option '%s'\n", opt->name);
+
+			opt->data.b = true;
+			opt->is_cli_set = true;
+
+			continue;
+		}
+
+		/* set value for */
+		i++;
+		if (i == argc) {
+			nereon_set_err("Missing argument for switch '%s'", argv[i - 1]);
+			return -1;
+		}
+
+		if (set_opt_val(argv[i], opt) != 0) {
+			nereon_set_err("Invalid argument for switch '%s'", argv[i - 1]);
+			return -1;
+		}
+		opt->is_cli_set = true;
 	}
 
 	return 0;
