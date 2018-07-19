@@ -45,10 +45,17 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_option **nos
 void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count);
 
 /*
- * get NOS option
+ * get NOS option by switch
  */
 
-struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_opts, int nos_opts_count,
-		const char *key, bool cli_parse);
+struct nereon_nos_option *nereon_get_nos_by_switch(struct nereon_nos_option *nos_opts, int nos_opts_count,
+		const char *key, bool sw_short);
+
+/*
+ * get NOS option by name
+ */
+
+struct nereon_nos_option *nereon_get_nos_by_name(struct nereon_nos_option *nos_opts, int nos_opts_count,
+		const char *key);
 
 #endif /* __NEREON_NOS_H__ */

@@ -496,3 +496,71 @@ struct nereon_nos_option *nereon_get_nos_option(struct nereon_nos_option *nos_op
 
 	return NULL;
 }
+
+/*
+ * get NOS option by switch
+ */
+
+struct nereon_nos_option *nereon_get_nos_by_switch(struct nereon_nos_option *nos_opts, int nos_opts_count,
+		const char *sw, bool sw_short)
+{
+	int i;
+
+	DEBUG_PRINT("Try to get NOS option with switch '%s'\n", sw);
+
+	for (i = 0; i < nos_opts_count; i++) {
+		struct nereon_nos_option *opt = &nos_opts[i];
+
+		if (strcasecmp(sw_short ? opt->sw_short : opt->sw_long, sw) == 0)
+			return opt;
+
+		/* check whether key is for arguments of config option */
+		if (opt->is_cli_set && opt->cli_args_count > 0) {
+			struct nereon_nos_option *cli_arg_opt;
+
+			cli_arg_opt = nereon_get_nos_by_switch(opt->cli_args, opt->cli_args_count, sw, sw_short);
+			if (cli_arg_opt)
+				return cli_arg_opt;
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * get NOS option by name
+ */
+
+struct nereon_nos_option *nereon_get_nos_by_name(struct nereon_nos_option *nos_opts, int nos_opts_count,
+		const char *name)
+{
+	int i;
+
+	DEBUG_PRINT("Try to get NOS option for name '%s'\n", name);
+
+	for (i = 0; i < nos_opts_count; i++) {
+		struct nereon_nos_option *opt = &nos_opts[i];
+
+		char *p, *cfg_key;
+		int cfg_key_len;
+
+		if (strcasecmp(opt->name, name) == 0)
+			return opt;
+
+		/* check whether key is specified by */
+		p = strchr(name, '.');
+		if (!p || opt->cli_args_count == 0)
+			continue;
+
+		/* check whether key is for arguments of config option */
+		if (opt->cli_args_count > 0) {
+			struct nereon_nos_option *cli_arg_opt;
+
+			cli_arg_opt = nereon_get_nos_by_name(opt->cli_args, opt->cli_args_count, p + 1);
+			if (cli_arg_opt)
+				return cli_arg_opt;
+		}
+	}
+
+	return NULL;
+}

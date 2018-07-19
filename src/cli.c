@@ -172,7 +172,7 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 		DEBUG_PRINT("short_switch: %s, long_switch:%s\n", sw_short, sw_long);
 
 		/* get NOS option for switch */
-		opt = nereon_get_nos_option(nos_opts, nos_opts_count, is_sw_short ? sw_short : sw_long, true);
+		opt = nereon_get_nos_by_switch(nos_opts, nos_opts_count, is_sw_short ? sw_short : sw_long, is_sw_short);
 		if (!opt) {
 			DEBUG_PRINT("Invalid command line switch '%s'\n", argv[i]);
 			nereon_set_err("Invalid command line switch '%s'", argv[i]);

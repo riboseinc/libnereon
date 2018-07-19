@@ -114,8 +114,9 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 		union nereon_config_data *cfg_data = NULL;
 
 		/* get config from NOS */
-		nos_opt = nereon_get_nos_option(nos_opts, ctx->nos_opts_count, cfg_opt->name, false);
+		nos_opt = nereon_get_nos_by_name(nos_opts, ctx->nos_opts_count, cfg_opt->name);
 		if (!nos_opt) {
+			nereon_set_err("Could not get NOS option for config '%s'", cfg_opt->name);
 			DEBUG_PRINT("Could not get NOS option for config '%s'\n", cfg_opt->name);
 			return -1;
 		}
