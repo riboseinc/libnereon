@@ -55,27 +55,22 @@ void nereon_cli_print_usage(struct nereon_nos_option *nos_opts, int nos_opts_cou
 		max_desc_len = max_desc_len > strlen(opt->desc_short) ? max_desc_len : strlen(opt->desc_short);
 	}
 
-	max_sw_len += 2;
-	max_desc_len += 2;
-
-	DEBUG_PRINT("max_sw_len:%d, max_desc_len:%d\n", max_sw_len, max_desc_len);
-
 	fprintf(stdout, "Usage: %s [options]\n", getprogname_s());
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &nos_opts[i];
 
-		char sw_short[3];
+		char sw_short[CFG_MAX_SHORT_SWITCH];
 
 		char *padding_sw, *padding_desc;
 		int padding_sw_len, padding_desc_len;
 
-		char *cli_lopt_prefix = strlen(opt->sw_short) > 0 ? "|--" : "--";
+		char *cli_lopt_prefix = strlen(opt->sw_short) > 0 ? "|" : "";
 
 		if (strlen(opt->sw_short) == 0) {
 			memset(sw_short, 0x20, sizeof(sw_short));
-			sw_short[2] = '\0';
+			sw_short[CFG_MAX_SHORT_SWITCH - 1] = '\0';
 		} else {
-			snprintf(sw_short, sizeof(sw_short), "-%s", opt->sw_short);
+			strcpy_s(sw_short, opt->sw_short, sizeof(sw_short));
 		}
 
 		padding_sw_len = strlen(opt->sw_long) > 0 ? max_sw_len - strlen(opt->sw_long) :
@@ -143,9 +138,6 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 {
 	int i;
 
-	char sw_short[2];
-	char sw_long[CFG_MAX_LONG_SWITCH];
-
 	if (argc == 1)
 		return 0;
 
@@ -155,24 +147,8 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 		struct nereon_nos_option *opt;
 		bool is_sw_short = false;
 
-		sw_short[0] = sw_long[0] = '\0';
-
-		if (*(argv[i]) == '-' && *(argv[i] + 1) != '-' && strlen(argv[i]) == 2) {
-			strcpy_s(sw_short, argv[i] + 1, sizeof(sw_short));
-			is_sw_short = true;
-		} else if (strlen(argv[i]) > 2 && strncmp(argv[i], "--", 2) == 0) {
-			strcpy_s(sw_long, argv[i] + 2, sizeof(sw_long));
-		} else {
-			DEBUG_PRINT("Invalid command line option '%s'", argv[i]);
-			nereon_set_err("Invalid command line option '%s'", argv[i]);
-
-			return -1;
-		}
-
-		DEBUG_PRINT("short_switch: %s, long_switch:%s\n", sw_short, sw_long);
-
 		/* get NOS option for switch */
-		opt = nereon_get_nos_by_switch(nos_opts, nos_opts_count, is_sw_short ? sw_short : sw_long, is_sw_short);
+		opt = nereon_get_nos_by_switch(nos_opts, nos_opts_count, argv[i]);
 		if (!opt) {
 			DEBUG_PRINT("Invalid command line switch '%s'\n", argv[i]);
 			nereon_set_err("Invalid command line switch '%s'", argv[i]);

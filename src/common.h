@@ -5,6 +5,7 @@
 
 /* constant macros */
 #define CFG_MAX_NAME                      64
+#define CFG_MAX_SHORT_SWITCH              3
 #define CFG_MAX_LONG_SWITCH               32
 #define CFG_MAX_SHORT_DESC                128
 #define CFG_MAX_LONG_DESC                 256

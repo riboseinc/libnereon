@@ -11,7 +11,7 @@ struct nereon_nos_option {
 
 	bool is_cli_set;
 
-	char sw_short[2];
+	char sw_short[CFG_MAX_SHORT_SWITCH];
 	char sw_long[CFG_MAX_LONG_SWITCH];
 
 	char desc_short[CFG_MAX_SHORT_DESC];
@@ -49,13 +49,13 @@ void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_co
  */
 
 struct nereon_nos_option *nereon_get_nos_by_switch(struct nereon_nos_option *nos_opts, int nos_opts_count,
-		const char *key, bool sw_short);
+		const char *sw_key);
 
 /*
  * get NOS option by name
  */
 
 struct nereon_nos_option *nereon_get_nos_by_name(struct nereon_nos_option *nos_opts, int nos_opts_count,
-		const char *key);
+		const char *name);
 
 #endif /* __NEREON_NOS_H__ */

@@ -3,7 +3,7 @@ config_option "config_file" {
 	type = "config"
 
 	cmdline "switch" {
-		short = "f"
+		short = "-f"
 	}
 
 	cmdline "description" {
@@ -19,7 +19,7 @@ config_option "go_daemon" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "D"
+		short = "-D"
 	}
 
 	cmdline "description" {
@@ -33,7 +33,7 @@ config_option "check_config" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "c"
+		short = "-c"
 	}
 
 	cmdline "description" {
@@ -45,7 +45,7 @@ config_option "print_version" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "v"
+		short = "-v"
 	}
 
 	cmdline "description" {
@@ -57,7 +57,7 @@ config_option "helper" {
 	type = "helper"
 
 	cmdline "switch" {
-		short = "h"
+		short = "-h"
 	}
 
 	cmdline "description" {
@@ -69,7 +69,7 @@ config_option "openvpn_bin" {
 	type = "string"
 
 	cmdline "switch" {
-		short = "o"
+		short = "-o"
 	}
 
 	cmdline "description" {
@@ -87,7 +87,7 @@ config_option "openvpn_root_check" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "r"
+		short = "-r"
 	}
 
 	cmdline "description" {
@@ -103,7 +103,7 @@ config_option "openvpn_updown_scripts" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "s"
+		short = "-s"
 	}
 
 	cmdline "description" {
@@ -119,7 +119,7 @@ config_option "user_id" {
 	type = "int"
 
 	cmdline "switch" {
-		short = "u"
+		short = "-u"
 	}
 
 	cmdline "description" {
@@ -137,7 +137,7 @@ config_option "restrict_socket" {
 	type = "bool"
 
 	cmdline "switch" {
-		short = "r"
+		short = "-r"
 	}
 
 	cmdline "description" {
@@ -153,7 +153,7 @@ config_option "log_directory" {
 	type = "string"
 
 	cmdline "switch" {
-		short = "l"
+		short = "-l"
 	}
 
 	cmdline "description" {
@@ -171,7 +171,7 @@ config_option "vpn_config_paths" {
 	type = "string"
 
 	cmdline "switch" {
-		short = "p"
+		short = "-p"
 	}
 
 	cmdline "description" {

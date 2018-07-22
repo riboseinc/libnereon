@@ -71,27 +71,27 @@ static void print_options(struct rvc_options *opt)
 	fprintf(stdout, "=============== Output of RVC options =================\n");
 
 	if (opt->connect)
-		fprintf(stdout, "--connect '%s'\n", opt->conn_name);
+		fprintf(stdout, "connect '%s'\n", opt->conn_name);
 	if (opt->disconnect)
-		fprintf(stdout, "--disconnect '%s'\n", opt->disconn_name);
+		fprintf(stdout, "disconnect '%s'\n", opt->disconn_name);
 	if (opt->reconnect)
-		fprintf(stdout, "--reconnect '%s'\n", opt->reconn_name);
+		fprintf(stdout, "reconnect '%s'\n", opt->reconn_name);
 	if (opt->status)
-		fprintf(stdout, "--status '%s'\n", opt->status_name);
+		fprintf(stdout, "status '%s'\n", opt->status_name);
 
 	if (opt->json)
 		fprintf(stdout, "json enabled\n");
 
 	if (opt->edit) {
 		if (opt->edit_auto_connect)
-			fprintf(stdout, "--edit '%s' --auto-connect '%s'\n",
+			fprintf(stdout, "edit '%s' --auto-connect '%s'\n",
 					opt->conn_name, opt->edit_auto_connect ? "true" : "false");
 
 		if (opt->edit_pre_exec_cmd)
-			fprintf(stdout, "--edit '%s' --pre-exec-cmd '%s'\n", opt->conn_name, opt->edit_data);
+			fprintf(stdout, "edit '%s' --pre-exec-cmd '%s'\n", opt->conn_name, opt->edit_data);
 
 		if (opt->edit_profile)
-			fprintf(stdout, "--edit '%s' --profile '%s'\n", opt->conn_name, opt->edit_data);
+			fprintf(stdout, "edit '%s' --profile '%s'\n", opt->conn_name, opt->edit_data);
 	}
 
 	if (opt->remove) {
@@ -103,35 +103,35 @@ static void print_options(struct rvc_options *opt)
 
 	if (opt->import) {
 		if (opt->import_tblk)
-			fprintf(stdout, "--import --import-tblk '%s'\n", opt->import_path);
+			fprintf(stdout, "import --import-tblk '%s'\n", opt->import_path);
 		if (opt->import_ovpn)
-			fprintf(stdout, "--import --import-ovpn '%s'\n", opt->import_path);
+			fprintf(stdout, "import --import-ovpn '%s'\n", opt->import_path);
 	}
 
 	if (opt->reload)
-		fprintf(stdout, "--reload\n");
+		fprintf(stdout, "reload\n");
 
 	if (opt->dns_override) {
 		if (opt->dns_override_enable)
-			fprintf(stdout, "--dns-override --enable '%s'\n", opt->dns_srvs);
+			fprintf(stdout, "dns-override --enable '%s'\n", opt->dns_srvs);
 		if (opt->dns_override_disable)
-			fprintf(stdout, "--dns-override --disable");
+			fprintf(stdout, "dns-override --disable");
 		if (opt->dsn_override_status)
-			fprintf(stdout, "--dns-override --status");
+			fprintf(stdout, "dns-override --status");
 	}
 
 	if (opt->script_security) {
 		if (opt->script_security_enable)
-			fprintf(stdout, "--script-security --enable\n");
+			fprintf(stdout, "script-security --enable\n");
 		if (opt->script_security_disable)
-			fprintf(stdout, "--script-security --disable\n");
+			fprintf(stdout, "script-security --disable\n");
 	}
 
 	if (opt->version)
-		fprintf(stdout, "--version\n");
+		fprintf(stdout, "version\n");
 
 	if (opt->helper)
-		fprintf(stdout, "--help\n");
+		fprintf(stdout, "help\n");
 }
 
 /*
