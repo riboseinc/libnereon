@@ -11,6 +11,12 @@ add_custom_command (
 	DEPENDS rvd.nos
 )
 
+add_custom_command (
+	OUTPUT rvc.nos.c
+	COMMAND ../tools/nos2cc ${CMAKE_CURRENT_SOURCE_DIR}/rvc.nos ${CMAKE_CURRENT_BINARY_DIR}/ rvc
+	DEPENDS rvc.nos
+)
+
 add_executable (noc_test rvd.nos.c noc_test.c)
 include_directories (${CMAKE_SOURCE_DIR}/src ${CMAKE_BINRARY_DIR}/tests)
 target_link_libraries (noc_test ${LIBNEREON})
@@ -21,12 +27,18 @@ add_executable (nos_test rvd.nos.c nos_test.c)
 include_directories (${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/tests)
 target_link_libraries (nos_test ${LIBNEREON})
 
+add_test (NAME nos_test COMMAND nos_test)
+
+add_executable (nos_test_multi rvc.nos.c nos_test_multi.c)
+include_directories (${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/tests)
+target_link_libraries (nos_test_multi ${LIBNEREON})
+
+add_test (NAME nos_test_multi COMMAND nos_test_multi)
+
 set (
 	LIBUCL
 	${CMAKE_BINARY_DIR}/libucl-inst/lib/libucl.a
 )
-
-add_test (NAME nos_test COMMAND nos_test)
 
 add_executable (ucl_test ucl_test.c)
 target_include_directories (ucl_test PUBLIC ${CMAKE_BINARY_DIR}/libucl-inst/include)

@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "nereon_config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -83,6 +81,20 @@ void nereon_ctx_finalize(nereon_ctx_t *ctx)
 }
 
 /*
+ * get libnereon version
+ */
+
+const char *nereon_get_version_info(void)
+{
+	static char version_info[128];
+
+	snprintf(version_info, sizeof(version_info), "version:%s, git commit:%s",
+			STRINGIZE_VALUE_OF(LIBNEREON_VERSION), STRINGIZE_VALUE_OF(GIT_COMMIT_HASH));
+
+	return version_info;
+}
+
+/*
  * parse nereon configuration options
  */
 
@@ -102,14 +114,18 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 		union nereon_config_data *cfg_data = NULL;
 
 		/* get config from NOS */
-		nos_opt = nereon_get_nos_option(nos_opts, ctx->nos_opts_count, cfg_opt->name);
+		nos_opt = nereon_get_nos_by_name(nos_opts, ctx->nos_opts_count, cfg_opt->name);
 		if (!nos_opt) {
+			nereon_set_err("Could not get NOS option for config '%s'", cfg_opt->name);
 			DEBUG_PRINT("Could not get NOS option for config '%s'\n", cfg_opt->name);
 			return -1;
 		}
 
-		if (nos_opt->is_set) {
+		if (nos_opt->is_cli_set) {
 			DEBUG_PRINT("NOS option was set for config '%s'\n", cfg_opt->name);
+
+			if (cfg_opt->is_cli_set)
+				*cfg_opt->is_cli_set = true;
 
 			/* set config value from command line at first */
 			cfg_data = &nos_opt->data;
@@ -119,7 +135,7 @@ int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opt
 				(noc_opt = nereon_get_noc_option(noc_opts, nos_opt->noc_key))) {
 				cfg_data = &noc_opt->data;
 			} else if (nos_opt->exist_default) {
-				DEBUG_PRINT("Setting NOS default data\n");
+				DEBUG_PRINT("Setting NOS default data for config '%s'\n", cfg_opt->name);
 				cfg_data = &nos_opt->default_data;
 			}
 		}
@@ -186,7 +202,7 @@ int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath)
 	for (i = 0; i < ctx->nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &ctx->nos_opts[i];
 
-		if (opt->type == NEREON_TYPE_CONFIG && opt->is_set) {
+		if (opt->type == NEREON_TYPE_CONFIG && opt->is_cli_set) {
 			cfg_fpath = opt->data.str;
 			break;
 		}
