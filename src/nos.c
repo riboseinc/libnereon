@@ -28,12 +28,10 @@
 #include <stdlib.h>
 #include <ucl.h>
 
-#include "common.h"
 #include "err.h"
 #include "util.h"
-#include "nereon.h"
 
-#include "nos.h"
+#include "nereon.h"
 
 static const char *nos_types[] = {
 	"INT", "BOOL", "STRING", "ARRAY", "IPPORT", "FLOAT",
@@ -416,6 +414,9 @@ int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_option **nos
 void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count)
 {
 	int i;
+
+	if (!nos_opts)
+		return;
 
 	for (i = 0; i < nos_opts_count; i++) {
 		struct nereon_nos_option *opt = &nos_opts[i];

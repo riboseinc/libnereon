@@ -30,13 +30,11 @@
 #include <errno.h>
 #include <limits.h>
 #include <ucl.h>
- 
-#include "common.h"
+
 #include "err.h"
 #include "util.h"
 
 #include "nereon.h"
-#include "nos.h"
 
 /*
  * show helper message

@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 
 #include "rvd.nos.h"
+#include "common.h"
 #include "nereon.h"
 
 #define NOC_CONFIG_FILE                     "rvd.noc"
@@ -131,8 +132,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	rvd_opts_count = sizeof(cfg_opts) / sizeof(struct nereon_config_option);
-	ret = nereon_get_config_options(&ctx, cfg_opts, rvd_opts_count);
+	ret = nereon_get_config_options(&ctx, cfg_opts);
 	if (ret == 0) {
 		print_config_options(&rvd_opts);
 	} else {

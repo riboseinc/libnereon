@@ -30,13 +30,10 @@
 
 #include <ucl.h>
 
-#include "common.h"
 #include "err.h"
 #include "util.h"
-#include "nereon.h"
-#include "nos.h"
 
-#include "noc.h"
+#include "nereon.h"
 
 /*
  * free config option
@@ -44,14 +41,15 @@
 
 static void free_config_options(struct nereon_noc_option *opt)
 {
-	if (opt) {
-		free_config_options(opt->childs);
-		free_config_options(opt->next);
-		if (opt->type == NEREON_TYPE_STRING && opt->data.str)
-			free(opt->data.str);
+	if (!opt)
+		return;
 
-		free(opt);
-	}
+	free_config_options(opt->childs);
+	free_config_options(opt->next);
+	if (opt->type == NEREON_TYPE_STRING && opt->data.str)
+		free(opt->data.str);
+
+	free(opt);
 }
 
 /*
@@ -91,7 +89,8 @@ static void print_noc_options(struct nereon_noc_option *opt, int level)
 		memset(sp_str, ' ', level * 4);
 		sp_str[level * 4] = '\0';
 
-		DEBUG_PRINT("%sopt->key:%s, opt->data:%s\n", sp_str, opt->key, convert_to_str(opt->type, &opt->data));
+		DEBUG_PRINT("%sopt->key:%s, opt->data:%s, opt->type:%d\n", sp_str, opt->key,
+			convert_to_str(opt->type, &opt->data), opt->type);
 	}
 
 	if (opt->childs) {
@@ -142,6 +141,7 @@ static void add_noc_option(struct nereon_noc_option *parent_opt, struct nereon_n
 
 		p->next = opt;
 	}
+	opt->parent = parent_opt;
 }
 
 /*
@@ -192,6 +192,8 @@ int parse_config_options(const ucl_object_t *obj, struct nereon_noc_option *pare
 		if (obj->key != NULL) {
 			strcpy_s(opt->key, obj->key, sizeof(opt->key));
 		}
+
+		DEBUG_PRINT("NOC: Added NOC option '%s' to parent '%s'\n", opt->key, parent_opt->key);
 
 		if (obj->type == UCL_OBJECT || obj->type == UCL_ARRAY) {
 			opt->type = obj->type == UCL_OBJECT ? NEREON_TYPE_OBJECT : NEREON_TYPE_ARRAY;
@@ -297,8 +299,6 @@ struct nereon_noc_option *get_noc_option(struct nereon_noc_option *parent_opt, c
 {
 	struct nereon_noc_option *p = parent_opt;
 
-	DEBUG_PRINT("Getting NOC option from parent '%s' for key '%s'\n", parent_opt->key, noc_key);
-
 	while (p) {
 		if (strcmp(p->key, noc_key) == 0)
 			return p;
@@ -316,9 +316,9 @@ struct nereon_noc_option *get_noc_option(struct nereon_noc_option *parent_opt, c
 struct nereon_noc_option *nereon_get_noc_option(struct nereon_noc_option *noc_opts, const char *cfg_key)
 {
 	struct nereon_noc_option *noc_opt = NULL;
-	char *buf, *tok_key;
+	char *buf, *tok_key, *brkt;
 
-	DEBUG_PRINT("Try to find NOC option for config '%s'\n", cfg_key);
+	DEBUG_PRINT("Try to find NOC option with key '%s'\n", cfg_key);
 
 	buf = strdup(cfg_key);
 	if (!buf) {
@@ -326,16 +326,42 @@ struct nereon_noc_option *nereon_get_noc_option(struct nereon_noc_option *noc_op
 		return NULL;
 	}
 
-	tok_key = strtok(buf, ".");
-	while (tok_key) {
+	for (tok_key = strtok_r(buf, ".", &brkt); tok_key; tok_key = strtok_r(NULL, ".", &brkt)) {
+		DEBUG_PRINT("Try to find NOC option by key '%s'\n", tok_key);
+
 		noc_opt = get_noc_option(noc_opt ? noc_opt->childs : noc_opts->childs, tok_key);
-		if (!noc_opt)
+		if (!noc_opt) {
+			DEBUG_PRINT("Could not found NOC option with key '%s'\n", cfg_key);
 			break;
-
-		tok_key = strtok(NULL, ".");
+		}
 	}
-
 	free(buf);
 
 	return noc_opt;
+}
+
+/*
+ * get NOC option from childs
+ */
+
+struct nereon_noc_option *nereon_get_child_noc_option(struct nereon_noc_option *parent_opt, const char *cfg_key)
+{
+	struct nereon_noc_option *child = parent_opt->childs;
+	int i = 0;
+
+	if (!cfg_key) {
+		DEBUG_PRINT("Found NOC child option with key '%s'\n", child->key);
+		return child;
+	}
+
+	DEBUG_PRINT("Try to find NOC option with key '%s' in parent '%s.%s'\n", cfg_key, parent_opt->key, child->key);
+
+	while (child) {
+		if (strcmp(child->key, cfg_key) == 0)
+			return child;
+
+		child = child->next;
+	}
+
+	return NULL;
 }

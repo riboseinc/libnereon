@@ -3,25 +3,15 @@
 
 #include <stdbool.h>
 
+#include "common.h"
+#include "nos.h"
+#include "cli.h"
+#include "noc.h"
+
 #define STRINGIZE(x)               #x
 #define STRINGIZE_VALUE_OF(x)      STRINGIZE(x)
 
-/*
- * libnereon configuration types
- */
-
-enum NEREON_CONFIG_TYPE {
-	NEREON_TYPE_INT = 0,
-	NEREON_TYPE_BOOL,
-	NEREON_TYPE_STRING,
-	NEREON_TYPE_ARRAY,
-	NEREON_TYPE_IPPORT,
-	NEREON_TYPE_FLOAT,
-	NEREON_TYPE_OBJECT,
-	NEREON_TYPE_CONFIG,
-	NEREON_TYPE_HELPER,
-	NEREON_TYPE_UNKNOWN
-};
+typedef void*    nereon_config_object_t;
 
 /*
  * libnereon configuration option
@@ -46,6 +36,8 @@ typedef struct nereon_ctx {
 	int nos_opts_count;
 
 	void *noc_opts;
+
+	bool use_nos_cfg;
 } nereon_ctx_t;
 
 /*
@@ -76,7 +68,7 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require
  * Parse NOC configuration file
  */
 
-int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath);
+int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg);
 
 /*
  * Print libnereon command line usage
@@ -85,10 +77,38 @@ int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath);
 void nereon_print_usage(nereon_ctx_t *ctx);
 
 /*
- * parse configuration options
+ * parse configuration options from context
  */
 
-int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count);
+int nereon_get_config_options_t(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count);
+
+#define nereon_get_config_options(ctx, cfg_opts) \
+	nereon_get_config_options_t(ctx, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
+
+/*
+ * parse configuration options from object
+ */
+
+int nereon_object_config_options_t(nereon_config_object_t obj, nereon_config_option_t *cfg_opts, int opts_count);
+
+#define nereon_object_config_options(obj, cfg_opts) \
+	nereon_object_config_options_t(obj, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
+
+/*
+ * interate nereon object
+ */
+
+#define nereon_object_object_foreach(obj, key, val) \
+	struct nereon_noc_option *noc_opt = (struct nereon_noc_option *)obj; \
+	nereon_config_object_t val = NULL; \
+	while (noc_opt) { \
+		if (strcmp(noc_opt->key, key) == 0) \
+			break; \
+		noc_opt = noc_opt->next; \
+	} \
+	if (noc_opt) \
+		val = (nereon_config_object_t)noc_opt; \
+	obj = (nereon_config_object_t)noc_opt->next;
 
 /*
  * Get the last error message

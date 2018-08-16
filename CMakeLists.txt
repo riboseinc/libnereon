@@ -5,7 +5,7 @@ project (libnereon)
 set (CMAKE_BUILD_TYPE Release)
 
 # set libnereon version
-set (LIBNEREON_VERSION "0.9.4")
+set (LIBNEREON_VERSION "0.9.5")
 
 execute_process(
   COMMAND git log -1 --format=%h

@@ -11,6 +11,7 @@ struct nereon_noc_option {
 
 	struct nereon_noc_option *childs;
 	struct nereon_noc_option *next;
+	struct nereon_noc_option *parent;
 
 	union nereon_config_data data;
 };
@@ -32,5 +33,11 @@ void nereon_free_noc_options(struct nereon_noc_option *noc_opts);
  */
 
 struct nereon_noc_option *nereon_get_noc_option(struct nereon_noc_option *noc_opts, const char *cfg_key);
+
+/*
+ * get NOC option from childs
+ */
+
+struct nereon_noc_option *nereon_get_child_noc_option(struct nereon_noc_option *noc_opt, const char *cfg_key);
 
 #endif /* __NEREON_NOC_H__ */

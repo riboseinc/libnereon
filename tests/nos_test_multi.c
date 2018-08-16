@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 
 	/* get configuration options */
 	memset(&opt, 0, sizeof(struct rvc_options));
-	if (nereon_get_config_options(&ctx, rvc_opts, sizeof(rvc_opts) / sizeof(struct nereon_config_option)) != 0) {
+	if (nereon_get_config_options(&ctx, rvc_opts) != 0) {
 		fprintf(stderr, "Could not get confiugration options(err:%s)\n", nereon_get_errmsg());
 	} else {
 		print_options(&opt);
