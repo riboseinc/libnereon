@@ -11,8 +11,6 @@
 #define STRINGIZE(x)               #x
 #define STRINGIZE_VALUE_OF(x)      STRINGIZE(x)
 
-typedef void*    nereon_config_object_t;
-
 /*
  * libnereon configuration option
  */
@@ -32,10 +30,10 @@ typedef struct nereon_config_option {
  */
 
 typedef struct nereon_ctx {
-	void *nos_opts;
+	nereon_nos_option_t *nos_opts;
 	int nos_opts_count;
 
-	void *noc_opts;
+	nereon_noc_option_t *noc_opts;
 
 	bool use_nos_cfg;
 } nereon_ctx_t;
@@ -89,26 +87,19 @@ int nereon_get_config_options_t(nereon_ctx_t *ctx, nereon_config_option_t *cfg_o
  * parse configuration options from object
  */
 
-int nereon_object_config_options_t(nereon_config_object_t obj, nereon_config_option_t *cfg_opts, int opts_count);
+int nereon_get_noc_configs_t(nereon_noc_option_t *noc_opt, nereon_config_option_t *cfg_opts, int opts_count);
 
-#define nereon_object_config_options(obj, cfg_opts) \
-	nereon_object_config_options_t(obj, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
+#define nereon_get_noc_configs(obj, cfg_opts) \
+	nereon_get_noc_configs_t(obj, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
 
 /*
  * interate nereon object
  */
 
-#define nereon_object_object_foreach(obj, key, val) \
-	struct nereon_noc_option *noc_opt = (struct nereon_noc_option *)obj; \
-	nereon_config_object_t val = NULL; \
-	while (noc_opt) { \
-		if (strcmp(noc_opt->key, key) == 0) \
-			break; \
-		noc_opt = noc_opt->next; \
-	} \
-	if (noc_opt) \
-		val = (nereon_config_object_t)noc_opt; \
-	obj = (nereon_config_object_t)noc_opt->next;
+#define nereon_object_object_foreach(parent_obj, val) \
+	struct nereon_noc_option *noc_parent_opt = (struct nereon_noc_option *)parent_obj; \
+	struct nereon_noc_option *val; \
+	for (val = noc_parent_opt->childs; val != NULL; val = val->next)
 
 /*
  * Get the last error message

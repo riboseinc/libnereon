@@ -24,7 +24,13 @@ enum RTR2_LOG_LEVEL {
 enum RTR2_MATCH_TYPE {
 	RTR2_MATCH_TYPE_INT = 0,
 	RTR2_MATCH_TYPE_STRING,
-	RTR2_MATCH_TYPE_ARRAY
+	RTR2_MATCH_TYPE_ARRAY_INT,
+	RTR2_MATCH_TYPE_ARRAY_STRING,
+	RTR2_MATCH_TYPE_CHAR,
+	RTR2_MATCH_TYPE_ANY_INT,                    /* match data is ANY for integer type */
+	RTR2_MATCH_TYPE_ANY_STRING,                 /* match data is ANY for string type */
+	RTR2_MATCH_TYPE_ANY_RANDOM,                 /* match data is ANY && new data is RANDOM */
+	RTR2_MATCH_TYPE_UNKNOWN
 };
 
 /*
@@ -39,6 +45,10 @@ typedef struct rtr2_action {
 
 	void *match_data;
 	void *new_data;
+
+	/* these fields are available only when match type is array */
+	int match_data_num;
+	int new_data_num;
 } rtr2_action_t;
 
 /*
@@ -65,5 +75,7 @@ typedef struct rtr2_conf {
 	rtr2_func_t *funcs;
 	int funcs_count;
 } rtr2_conf_t;
+
+extern rtr2_conf_t *g_rtr2_config;
 
 #endif /* __RTR2_CONF_TEST_H__ */

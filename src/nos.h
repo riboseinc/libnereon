@@ -5,7 +5,7 @@
  * libnereon NOS options
  */
 
-struct nereon_nos_option {
+typedef struct nereon_nos_option {
 	char name[CFG_MAX_NAME];
 	enum NEREON_CONFIG_TYPE type;
 
@@ -30,32 +30,32 @@ struct nereon_nos_option {
 
 	bool exist_default;
 	union nereon_config_data default_data;
-};
+} nereon_nos_option_t;
 
 /*
  * parse multiconfig NOS options
  */
 
-int nereon_parse_nos_options(const char *nos_cfg, struct nereon_nos_option **nos_opts, int *nos_opts_count);
+int nereon_parse_nos_options(const char *nos_cfg, nereon_nos_option_t **nos_opts, int *nos_opts_count);
 
 /*
  * free NOS options
  */
 
-void nereon_free_nos_options(struct nereon_nos_option *nos_opts, int nos_opts_count);
+void nereon_free_nos_options(nereon_nos_option_t *nos_opts, int nos_opts_count);
 
 /*
  * get NOS option by switch
  */
 
-struct nereon_nos_option *nereon_get_nos_by_switch(struct nereon_nos_option *nos_opts, int nos_opts_count,
+nereon_nos_option_t *nereon_get_nos_by_switch(nereon_nos_option_t *nos_opts, int nos_opts_count,
 		const char *sw_key);
 
 /*
  * get NOS option by name
  */
 
-struct nereon_nos_option *nereon_get_nos_by_name(struct nereon_nos_option *nos_opts, int nos_opts_count,
+nereon_nos_option_t *nereon_get_nos_by_name(nereon_nos_option_t *nos_opts, int nos_opts_count,
 		const char *name);
 
 #endif /* __NEREON_NOS_H__ */
