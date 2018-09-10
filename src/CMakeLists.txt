@@ -31,4 +31,4 @@ add_custom_command (
 )
 
 install (FILES ${LIBNEREON_LIBRARY} DESTINATION lib)
-install (FILES nereon.h DESTINATION include)
+install (FILES nereon.h noc.h nos.h common.h cli.h DESTINATION include/nereon)

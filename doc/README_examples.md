@@ -1,0 +1,236 @@
+
+# `libnereon` usage example
+
+## NOS and NOC configuration
+
+### NOS configuration
+
+NOS configuration is used to specify what command line options and configurations used for each config item.
+Here is the example of the NOS configuration(see `tests/rvd.nos`).
+
+```
+config_option "config_file" {
+	type = "config"
+
+	cmdline "switch" {
+		short = "-f"
+	}
+
+	cmdline "description" {
+		short = "<config file>"
+		long = "set configuration file"
+	}
+
+	env = "RVD_CONFIG_FILE"
+	default = "/opt/rvc/etc/rvd.conf"
+}
+
+config_option "go_daemon" {
+	type = "bool"
+
+	cmdline "switch" {
+		short = "-D"
+	}
+
+	cmdline "description" {
+		long = "daemonize"
+	}
+
+	default = false
+}
+
+config_option "helper" {
+	type = "helper"
+
+	cmdline "switch" {
+		short = "-h"
+	}
+
+	cmdline "description" {
+		long = "print help message"
+	}
+}
+
+config_option "openvpn_bin" {
+	type = "string"
+
+	cmdline "switch" {
+		short = "-o"
+	}
+
+	cmdline "description" {
+		short = <OpenVPN binary path>
+		long = "specify OpenVPN binary path"
+	}
+
+	env = "OPENVPN_BIN_PATH"
+
+	config = "openvpn.sbin_path"
+	default = "/opt/openvpn/sbin/openvpn"
+}
+
+```
+
+### NOC configuration
+
+NOC confiugration is used to specify the options when running application.
+Here is the example of NOC configuration(see `tests/rvd.noc`).
+
+```
+global {
+	user_id = 501
+	restrict_socket = true
+	log_directory = "/var/log/rvd"
+	vpn_config_paths = "/opt/rvc/etc/vpn.d"
+}
+
+openvpn {
+	sbin_path = "/opt/openvpn/sbin/openvpn"
+	root_check = true
+	enable_updown_scripts = false
+}
+```
+
+## Logic of programming using libnereon API functions.
+
+Here is the example of usage of `libnereon` API functions(see `tests/noc_test.c`)
+
+### Initialize `libnereon` context object
+
+```
+/* initialize nereon context */
+ret = nereon_ctx_init(&ctx, get_rvd_nos_cfg());
+if (ret != 0) {
+	fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
+	exit(1);
+}
+```
+
+  * `ctx` is the context object of `libnereon` with type `nereon_ctx_t`
+  * `get_rvd_nos_cfg()` function is to get NOS configuration in string format.
+    NOS configuration is parsed and set while compiling the program.
+    `tools/nos2cc` is an utility to convert NOS configuration to static code which returns the NOS configuration as string buffer.
+    Here is the command example to convert NOS configuration.
+
+```
+    nos2cc rvd.nos ./ rvd
+```
+  After executed the above command, `rvd.nos.c` and `rvd.nos.h` with `get_rvd_nos_cfg()` function will be generated.
+  If this argument is `NULL`, then NOS configuration isn't exist. i.e. only NOC confiugration is exist.
+
+### Parse command line arguments
+
+```
+ret = nereon_parse_cmdline(&ctx, argc, argv, &require_exit);
+if (ret != 0 || require_exit) {
+	if (ret != 0)
+		fprintf(stderr, "Failed to parse command line(err:%s)\n", nereon_get_errmsg());
+
+	nereon_print_usage(&ctx);
+	nereon_ctx_finalize(&ctx);
+
+	exit(ret);
+}
+```
+
+  * `ctx`: `libnereon` context object
+  * `argc`: the count of arguments of main program
+  * `argv`: argument list
+  * `require_exit`: if command line argument is specified to show usage message, then it will be set as `true`.
+
+### Print usage message
+
+```
+nereon_print_usage(&ctx);
+```
+
+   This function print help message by parsing NOS configuration.
+   The output example is the following:
+
+```
+Usage: noc_test [options]
+  -f  <config file>         : set configuration file
+  -D                        : daemonize
+  -c                        : only check config and exit
+  -v                        : print version
+  -h                        : print help message
+  -o  <OpenVPN binary path> : specify OpenVPN binary path
+  -r                        : enable root check for OpenVPN binary
+  -s                        : enable up/down scripts for OpenVPN
+  -u  <User ID>             : specify User ID for RVC process
+  -r                        : restrict access to communication socket
+  -l  <log directory>       : specify the log directory of RVD process
+  -p  <VPN config directory>: specify the directory path of VPN configurations
+```
+
+- Parse NOC configuration file
+
+```
+if (nereon_parse_config_file(&ctx, NOC_CONFIG_FILE) != 0) {
+	fprintf(stderr, "Could not parse NOC configuration(err:%s)\n", nereon_get_errmsg());
+	nereon_ctx_finalize(&ctx);
+
+	exit(1);
+}
+```
+
+   This function parses NOC configuration file.
+
+   * `ctx`: `libnereon` context object
+   * `NOC_CONFIG_FILE`: The path of NOC configuration file
+
+### Get configuration options from NOS and NOC configurations
+
+All confiugration options may be get by calling `nereon_get_config_options` function.
+Here is the example.
+
+```
+struct rvd_options {
+	char *config_fpath;
+	bool go_daemon;
+	bool print_help;
+	char *ovpn_bin_path;
+};
+
+struct rvd_options rvd_opts;
+struct nereon_config_option cfg_opts[] = {
+	{"config_file", NEREON_TYPE_CONFIG, false, NULL, &rvd_opts.config_fpath},
+	{"go_daemon", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.go_daemon},
+	{"helper", NEREON_TYPE_BOOL, false, NULL, &rvd_opts.print_help},
+	{"openvpn_bin", NEREON_TYPE_STRING, true, NULL, &rvd_opts.ovpn_bin_path},
+};
+
+memset(&rvd_opts, 0, sizeof(rvd_opts));
+ret = nereon_get_config_options(&ctx, cfg_opts);
+```
+
+`nereon_config_option` structure has the following fields:
+
+```
+typedef struct nereon_config_option {
+	const char *name;
+	enum NEREON_CONFIG_TYPE type;
+
+	bool mandatory;
+	bool *is_cli_set;
+
+	void *data;
+} nereon_config_option_t;
+```
+
+  * `name`: the configuration name.
+    If NOS configuration doesn't exist, then it specifies the name of NOC configuration options.
+
+  * `type`: the type of configuration value.(see `NEREON_CONFIG_TYPE` enum constant in `nereon.h`)
+  * `mandatory`: `nereon_get_config_options` function will be failed when the configuration option with `true` value is missed.
+  * `is_cli_set`: `true` if command line is set for this configuration
+  * `data`: configuration value
+
+### Finalize `libnereon` context
+
+It will deallocate all memory buffers while parsing NOS and NOC configurations.
+
+```
+/* finalize nereon context */
+nereon_ctx_finalize(&ctx);
+```

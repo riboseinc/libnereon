@@ -35,6 +35,12 @@ target_link_libraries (nos_test_multi ${LIBNEREON})
 
 add_test (NAME nos_test_multi COMMAND nos_test_multi)
 
+add_executable (rtr2_conf_test rtr2_conf_test.c)
+include_directories (${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/tests)
+target_link_libraries (rtr2_conf_test ${LIBNEREON})
+
+add_test (NAME rtr2_conf_test COMMAND rtr2_conf_test ${CMAKE_CURRENT_SOURCE_DIR}/rtr2.conf)
+
 set (
 	LIBUCL
 	${CMAKE_BINARY_DIR}/libucl-inst/lib/libucl.a

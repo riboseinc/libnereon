@@ -3,25 +3,13 @@
 
 #include <stdbool.h>
 
+#include "common.h"
+#include "nos.h"
+#include "cli.h"
+#include "noc.h"
+
 #define STRINGIZE(x)               #x
 #define STRINGIZE_VALUE_OF(x)      STRINGIZE(x)
-
-/*
- * libnereon configuration types
- */
-
-enum NEREON_CONFIG_TYPE {
-	NEREON_TYPE_INT = 0,
-	NEREON_TYPE_BOOL,
-	NEREON_TYPE_STRING,
-	NEREON_TYPE_ARRAY,
-	NEREON_TYPE_IPPORT,
-	NEREON_TYPE_FLOAT,
-	NEREON_TYPE_OBJECT,
-	NEREON_TYPE_CONFIG,
-	NEREON_TYPE_HELPER,
-	NEREON_TYPE_UNKNOWN
-};
 
 /*
  * libnereon configuration option
@@ -42,10 +30,12 @@ typedef struct nereon_config_option {
  */
 
 typedef struct nereon_ctx {
-	void *nos_opts;
+	nereon_nos_option_t *nos_opts;
 	int nos_opts_count;
 
-	void *noc_opts;
+	nereon_noc_option_t *noc_opts;
+
+	bool use_nos_cfg;
 } nereon_ctx_t;
 
 /*
@@ -76,7 +66,7 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require
  * Parse NOC configuration file
  */
 
-int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath);
+int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg);
 
 /*
  * Print libnereon command line usage
@@ -85,10 +75,31 @@ int nereon_parse_config_file(nereon_ctx_t *ctx, const char *noc_cfg_fpath);
 void nereon_print_usage(nereon_ctx_t *ctx);
 
 /*
- * parse configuration options
+ * parse configuration options from context
  */
 
-int nereon_get_config_options(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count);
+int nereon_get_config_options_t(nereon_ctx_t *ctx, nereon_config_option_t *cfg_opts, int opts_count);
+
+#define nereon_get_config_options(ctx, cfg_opts) \
+	nereon_get_config_options_t(ctx, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
+
+/*
+ * parse configuration options from object
+ */
+
+int nereon_get_noc_configs_t(nereon_noc_option_t *noc_opt, nereon_config_option_t *cfg_opts, int opts_count);
+
+#define nereon_get_noc_configs(obj, cfg_opts) \
+	nereon_get_noc_configs_t(obj, cfg_opts, sizeof(cfg_opts) / sizeof(struct nereon_config_option))
+
+/*
+ * interate nereon object
+ */
+
+#define nereon_object_object_foreach(parent_obj, val) \
+	struct nereon_noc_option *noc_parent_opt = (struct nereon_noc_option *)parent_obj; \
+	struct nereon_noc_option *val; \
+	for (val = noc_parent_opt->childs; val != NULL; val = val->next)
 
 /*
  * Get the last error message

@@ -24,4 +24,22 @@ union nereon_config_data {
 	double d;
 };
 
+/*
+ * libnereon configuration types
+ */
+
+enum NEREON_CONFIG_TYPE {
+	NEREON_TYPE_INT = 0,
+	NEREON_TYPE_BOOL,
+	NEREON_TYPE_STRING,
+	NEREON_TYPE_ARRAY,
+	NEREON_TYPE_IPPORT,
+	NEREON_TYPE_FLOAT,
+	NEREON_TYPE_OBJECT,
+	NEREON_TYPE_CONFIG,
+	NEREON_TYPE_HELPER,
+	NEREON_TYPE_KEY,
+	NEREON_TYPE_UNKNOWN
+};
+
 #endif /* __NEREON_COMMON_H__ */
