@@ -40,8 +40,6 @@
 
 #include <ucl.h>
 
-#include "nereon.h"
-
 struct hcl_config {
 	char key[128];
 	int type;

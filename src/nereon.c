@@ -29,38 +29,22 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "err.h"
-#include "util.h"
-
+#include "ctx.h"
 #include "nereon.h"
 
 /*
  * Intiialize libnereon context object
  */
 
-int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
+nereon_ctx_t *nereon_ctx_init(const char *nos_cfg)
 {
-	struct nereon_nos_option *nos_opts = NULL;
-	int nos_opts_count = 0;
+	nereon_ctx_priv_t *ctx;
 
-	DEBUG_PRINT("Initializing libnereon context\n");
+	ctx = nereon_ctx_priv_init(nos_cfg);
+	if (!ctx)
+		return NULL;
 
-	memset(ctx, 0, sizeof(nereon_ctx_t));
-
-	/* if NOS configuration isn't exist, then return success */
-	if (!nos_cfg)
-		return 0;
-
-	/* parse NOS options */
-	if (nereon_parse_nos_options(nos_cfg, &nos_opts, &nos_opts_count) != 0) {
-		DEBUG_PRINT("Failed to parse NOS data(err:%s)\n", nereon_get_err());
-		return -1;
-	}
-
-	ctx->nos_opts = nos_opts;
-	ctx->nos_opts_count = nos_opts_count;
-
-	return 0;
+	return (nereon_ctx_t *)ctx;
 }
 
 /*
@@ -69,8 +53,7 @@ int nereon_ctx_init(nereon_ctx_t *ctx, const char *nos_cfg)
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx)
 {
-	nereon_free_noc_options(ctx->noc_opts);
-	nereon_free_nos_options(ctx->nos_opts, ctx->nos_opts_count);
+	nereon_ctx_priv_finalize((nereon_ctx_priv_t *)ctx);
 }
 
 /*
@@ -86,6 +69,26 @@ const char *nereon_get_version_info(void)
 
 	return version_info;
 }
+
+/*
+ * Parse command line arguments
+ */
+
+int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit)
+{
+	return nereon_ctx_parse_cmdline((nereon_ctx_priv_t *)ctx, argc, argv, require_exit);
+}
+
+/*
+ * get libnereon error message
+ */
+
+const char *nereon_get_errmsg(void)
+{
+	return NULL;
+}
+
+#if 0
 
 /*
  * parse nereon configuration options
@@ -243,15 +246,6 @@ int nereon_get_noc_configs_t(nereon_noc_option_t *noc_opt, nereon_config_option_
 }
 
 /*
- * Parse command line arguments
- */
-
-int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit)
-{
-	return nereon_cli_parse(ctx->nos_opts, ctx->nos_opts_count, argc, argv, require_exit);
-}
-
-/*
  * parse NOC configuration file
  */
 
@@ -301,3 +295,5 @@ const char *nereon_get_errmsg()
 {
 	return nereon_get_err();
 }
+
+#endif

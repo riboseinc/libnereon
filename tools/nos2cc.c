@@ -159,7 +159,7 @@ static int write_cc_files(const char *src_fpath, const char *hdr_fpath,
 
 int main(int argc, char *argv[])
 {
-	nereon_ctx_t ctx;
+	nereon_ctx_t *ctx;
 
 	char *nos_base_name;
 
@@ -181,14 +181,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* check NOS configuration has valid syntax */
-	memset(&ctx, 0, sizeof(nereon_ctx_t));
-	if (nereon_ctx_init(&ctx, nos_str) != 0) {
+	ctx = nereon_ctx_init(nos_str);
+	if (!ctx) {
 		fprintf(stderr, "Invalid NOS configuration(err:%s)", nereon_get_errmsg());
 
 		free(nos_str);
 		exit(1);
 	}
-	nereon_ctx_finalize(&ctx);
+	nereon_ctx_finalize(ctx);
 
 	/* get basename of NOS configuration path */
 	nos_base_name = strrchr(argv[1], '/');

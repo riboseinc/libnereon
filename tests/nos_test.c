@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 
 #include "nereon.h"
-#include "rvd.nos.h"
+#include "rvc.nos.h"
 
 /*
  * main function
@@ -38,17 +38,18 @@
 
 int main(int argc, char *argv[])
 {
-	nereon_ctx_t ctx;
+	nereon_ctx_t *ctx;
 	int ret;
 	bool require_exit = false;
 
 	/* initialize nereon context */
-	ret = nereon_ctx_init(&ctx, get_rvd_nos_cfg());
-	if (ret != 0) {
+	ctx = nereon_ctx_init(get_rvc_nos_cfg());
+	if (!ctx) {
 		fprintf(stderr, "Could not initialize nereon context(err:%s)\n", nereon_get_errmsg());
 		return -1;
 	}
 
+#if 0
 	/* print command line usage */
 	ret = nereon_parse_cmdline(&ctx, argc, argv, &require_exit);
 	if (ret != 0 || require_exit) {
@@ -57,9 +58,10 @@ int main(int argc, char *argv[])
 
 		nereon_print_usage(&ctx);
 	}
+#endif
 
 	/* finalize nereon context */
-	nereon_ctx_finalize(&ctx);
+	nereon_ctx_finalize(ctx);
 
 	return ret;
 }

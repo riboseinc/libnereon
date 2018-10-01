@@ -25,6 +25,16 @@ configure_file (
 # check functions
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 
+OPTION(NEREON_DEBUG
+	"Build libnereon using debugging code"
+	OFF)
+IF(NEREON_DEBUG)
+	MESSAGE("Adding DEBUG flag...")
+	ADD_DEFINITIONS(-DNEREON_DEBUG)
+	SET(CMAKE_BUILD_TYPE Debug)
+	MESSAGE("Build type is " ${CMAKE_BUILD_TYPE})
+ENDIF(NEREON_DEBUG)
+
 # add libucl dependency
 include (ExternalProject)
 

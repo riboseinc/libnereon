@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include <ucl.h>
+
 #include "util.h"
 
 extern const char *__progname;
@@ -132,4 +134,44 @@ size_t read_file_contents(const char *fpath, char **buf)
 	fclose(fp);
 
 	return read_len;
+}
+
+/*
+ * parse UCL fields
+ */
+
+int parse_ucl_fields(const ucl_object_t *obj, struct ucl_field *fields, int count)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		const ucl_object_t *sub_obj;
+
+		sub_obj = ucl_object_lookup(obj, fields[i].key);
+		if (!sub_obj)
+			continue;
+
+		switch (fields[i].ucl_type) {
+		case UCL_INT:
+			*(int *)fields[i].value = ucl_object_toint(sub_obj);
+			break;
+
+		case UCL_BOOLEAN:
+			*(bool *)fields[i].value = ucl_object_toboolean(sub_obj);
+			break;
+
+		case UCL_STRING:
+			strcpy_s((char *)fields[i].value, ucl_object_tostring(sub_obj), fields[i].size);
+			break;
+
+		case UCL_FLOAT:
+			*(double *)fields[i].value = ucl_object_todouble(sub_obj);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return 0;
 }

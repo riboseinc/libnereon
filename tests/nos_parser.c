@@ -26,12 +26,78 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <ucl.h>
 
+#include "common.h"
 #include "err.h"
-#include "util.h"
+#include "nos.h"
 
-#include "ctx.h"
+#define BUF_SIZE                   4096
+
+/*************************************** util.c ************************************************/
+
+/* size bounded string copy function */
+static size_t strcpy_s(char *dst, const char *src, size_t size)
+{
+	size_t srclen;
+
+	/* decrease size value */
+	size--;
+
+	/* get source len */
+	srclen = strlen(src);
+	if (srclen > size)
+		srclen = size;
+
+	memcpy(dst, src, srclen);
+	dst[srclen] = '\0';
+
+	return srclen;
+}
+
+/*************************************** ucl_util.c ********************************************/
+
+#define parse_ucl_fields_ex(obj, fields) \
+	parse_ucl_fields(obj, fields, sizeof(fields) / sizeof(struct ucl_field))
+
+static int parse_ucl_fields(const ucl_object_t *obj, struct ucl_field *fields, int count)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		const ucl_object_t *sub_obj;
+
+		sub_obj = ucl_object_lookup(obj, fields[i].key);
+		if (!sub_obj)
+			continue;
+
+		switch (fields[i].ucl_type) {
+		case UCL_INT:
+			*(int *)fields[i].value = ucl_object_toint(sub_obj);
+			break;
+
+		case UCL_BOOLEAN:
+			*(bool *)fields[i].value = ucl_object_toboolean(sub_obj);
+			break;
+
+		case UCL_STRING:
+			strcpy_s((char *)fields[i].value, ucl_object_tostring(sub_obj), fields[i].size);
+			break;
+
+		case UCL_FLOAT:
+			*(double *)fields[i].value = ucl_object_todouble(sub_obj);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/***********************************************************************************************/
 
 static int parse_nos_options(const ucl_object_t *obj, nereon_nos_option_t *parent_opt);
 
@@ -116,7 +182,7 @@ static void print_nos_schema(nereon_nos_schema_t *nos_schema)
 
 	DEBUG_PRINT("============== NOS options ==============\n\n");
 
-	print_nos_option(&nos_schema->root_opt, 0);
+	print_nos_option(nos_schema->root_opt, 0);
 }
 
 /*
@@ -369,8 +435,16 @@ static int parse_nos_schema(const ucl_object_t *obj, nereon_nos_schema_t *nos_sc
 	while ((p = ucl_object_iterate_safe(it, true)) != NULL && ret == 0) {
 		if (strcmp(p->key, "program") == 0)
 			ret = parse_nos_prog_info(p, &nos_schema->prog_info);
-		else if (strcmp(p->key, "option") == 0)
-			ret = parse_nos_options(p, &nos_schema->root_opt);
+		else if (strcmp(p->key, "option") == 0) {
+			nos_schema->root_opt = (nereon_nos_option_t *)malloc(sizeof(nereon_nos_option_t));
+			if (!nos_schema->root_opt) {
+				ret = -1;
+				break;
+			}
+			memset(nos_schema->root_opt, 0, sizeof(nereon_nos_option_t));
+
+			ret = parse_nos_options(p, nos_schema->root_opt);
+		}
 	}
 	ucl_object_iterate_free(it);
 
@@ -423,31 +497,45 @@ end:
 
 void nereon_free_nos_schema(nereon_nos_schema_t *nos_schema)
 {
-	int i;
-
-	for (i = 0; i < nos_schema->root_opt.sub_opts.opts_count; i++)
-		free_nos_option(nos_schema->root_opt.sub_opts.opts[i]);
+	free_nos_option(&nos_schema->root_opt);
 }
 
 /*
- * get NOS option by switch
+ * main function
  */
 
-nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_schema_t *nos_schema, const char *sw)
+int main(int argc, char *argv[])
 {
-	return NULL;
-}
+	FILE *fp;
+	char nos_cfg[BUF_SIZE];
+	size_t len;
 
-/*
- * check if NOS option requires arguments
- */
+	int ret = -1;
 
-bool nereon_nos_requires_args(nereon_nos_option_t *nos_opt)
-{
-	if (nos_opt->type == NEREON_TYPE_BOOL ||
-		nos_opt->type == NEREON_TYPE_HELPER ||
-		nos_opt->type == NEREON_TYPE_VERSION)
-		return false;
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <NOS configuration file>\n", argv[0]);
+		exit(1);
+	}
 
-	return true;
+	/* read file contents */
+	fp = fopen(argv[1], "r");
+	if (!fp) {
+		fprintf(stderr, "Could not open file '%s' for reading\n", argv[1]);
+		exit(1);
+	}
+
+	len = fread(nos_cfg, 1, BUF_SIZE - 1, fp);
+	if (len > 0) {
+		nereon_nos_schema_t nos_schema;
+
+		nos_cfg[len] = '\0';
+		ret = nereon_parse_nos_schema(nos_cfg, &nos_schema);
+		if (ret == 0) {
+			print_nos_schema(&nos_schema);
+			nereon_free_nos_schema(&nos_schema);
+		}
+	}
+	fclose(fp);
+
+	return ret;
 }

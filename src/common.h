@@ -4,14 +4,18 @@
 #include <stdbool.h>
 
 /* constant macros */
-#define CFG_MAX_NAME                      64
-#define CFG_MAX_SHORT_SWITCH              3
-#define CFG_MAX_LONG_SWITCH               32
-#define CFG_MAX_SHORT_DESC                128
-#define CFG_MAX_LONG_DESC                 256
-#define CFG_MAX_ENV_NAME                  64
-#define CFG_MAX_KEY_NAME                  128
-#define CFG_MAX_ERR_MSG                   1024
+#define NR_MAX_NAME                64
+#define NR_MAX_TYPE                64
+#define NR_MAX_SWITCH              64
+#define NR_MAX_DESC                256
+#define NR_MAX_HINT                128
+#define NR_MAX_ENV_NAME            64
+#define NR_MAX_KEY_NAME            128
+#define NR_MAX_ERR_MSG             1024
+#define NR_MAX_VERSION             32
+#define NR_MAX_COPYRIGHT           128
+#define NR_MAX_URL                 1024
+#define NR_MAX_DEFAULT_VAL         512
 
 /*
  * libnereon configuration data
@@ -28,17 +32,15 @@ union nereon_config_data {
  * libnereon configuration types
  */
 
-enum NEREON_CONFIG_TYPE {
+enum NEREON_OPT_TYPE {
 	NEREON_TYPE_INT = 0,
 	NEREON_TYPE_BOOL,
 	NEREON_TYPE_STRING,
 	NEREON_TYPE_ARRAY,
-	NEREON_TYPE_IPPORT,
 	NEREON_TYPE_FLOAT,
-	NEREON_TYPE_OBJECT,
 	NEREON_TYPE_CONFIG,
 	NEREON_TYPE_HELPER,
-	NEREON_TYPE_KEY,
+	NEREON_TYPE_VERSION,
 	NEREON_TYPE_UNKNOWN
 };
 
