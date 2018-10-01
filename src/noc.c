@@ -120,7 +120,6 @@ static nereon_noc_option_t *new_noc_option()
 		nereon_set_err("Could not create UCL parser");
 		return NULL;
 	}
-
 	memset(p, 0, sizeof(nereon_noc_option_t));
 
 	return p;

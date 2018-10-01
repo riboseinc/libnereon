@@ -1,61 +1,92 @@
 #ifndef __NEREON_NOS_H__
 #define __NEREON_NOS_H__
 
+enum NEREON_SUBOPT_TYPE {
+	NEREON_SUBOPT_SINGLE = 0,
+	NEREON_SUBOPT_MIXED
+};
+
+/*
+ * libnereon NOS prog info
+ */
+
+typedef struct nereon_nos_proginfo {
+	char prog_name[NR_MAX_NAME];
+	char desc[NR_MAX_DESC];
+	char version[NR_MAX_VERSION];
+	char copyright[NR_MAX_COPYRIGHT];
+	char homepage[NR_MAX_URL];
+	char license[NR_MAX_URL];
+} nereon_nos_proginfo_t;
+
+/*
+ * nereon NOS sub option
+ */
+
+typedef struct nereon_nos_subopts {
+	bool requires;
+	enum NEREON_SUBOPT_TYPE type;
+
+	struct nereon_nos_option **opts;
+	int opts_count;
+} nereon_nos_subopts_t;
+
+/*
+ * nereon NOS option
+ */
+
+typedef struct nereon_nos_option {
+	char name[NR_MAX_NAME];
+	enum NEREON_OPT_TYPE type;
+
+	int is_option;
+
+	char sw[NR_MAX_SWITCH];
+	char desc[NR_MAX_DESC];
+	char hint[NR_MAX_HINT];
+
+	char default_val[NR_MAX_DEFAULT_VAL];
+
+	nereon_nos_subopts_t sub_opts;
+} nereon_nos_option_t;
+
 /*
  * libnereon NOS options
  */
 
-typedef struct nereon_nos_option {
-	char name[CFG_MAX_NAME];
-	enum NEREON_CONFIG_TYPE type;
-
-	bool is_cli_set;
-
-	char sw_short[CFG_MAX_SHORT_SWITCH];
-	char sw_long[CFG_MAX_LONG_SWITCH];
-
-	char desc_short[CFG_MAX_SHORT_DESC];
-	char desc_long[CFG_MAX_LONG_DESC];
-
-	int cli_args_count;
-	struct nereon_nos_option *cli_args;
-
-	bool exist_cli_default;
-	union nereon_config_data cli_default_data;
-
-	char env[CFG_MAX_ENV_NAME];
-	char noc_key[CFG_MAX_KEY_NAME];
-
-	union nereon_config_data data;
-
-	bool exist_default;
-	union nereon_config_data default_data;
-} nereon_nos_option_t;
+typedef struct nereon_nos_schema {
+	nereon_nos_proginfo_t    prog_info;
+	nereon_nos_option_t      root_opt;
+} nereon_nos_schema_t;
 
 /*
- * parse multiconfig NOS options
+ * parse NOS schema
  */
 
-int nereon_parse_nos_options(const char *nos_cfg, nereon_nos_option_t **nos_opts, int *nos_opts_count);
+int nereon_parse_nos_schema(const char *nos_cfg, nereon_nos_schema_t *nos_schema);
 
 /*
- * free NOS options
+ * free NOS schema
  */
 
-void nereon_free_nos_options(nereon_nos_option_t *nos_opts, int nos_opts_count);
+void nereon_free_nos_schema(nereon_nos_schema_t *nos_schema);
 
 /*
  * get NOS option by switch
  */
 
-nereon_nos_option_t *nereon_get_nos_by_switch(nereon_nos_option_t *nos_opts, int nos_opts_count,
-		const char *sw_key);
+nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_schema_t *nos_schema, const char *sw);
 
 /*
- * get NOS option by name
+ * check if NOS option requires arguments
  */
 
-nereon_nos_option_t *nereon_get_nos_by_name(nereon_nos_option_t *nos_opts, int nos_opts_count,
-		const char *name);
+bool nereon_nos_requires_args(nereon_nos_option_t *nos_opt);
+
+/*
+ * check if NOS option requires sub options
+ */
+
+bool nereon_nos_requires_suboptions(nereon_nos_option_t *nos_opt);
 
 #endif /* __NEREON_NOS_H__ */

@@ -1,25 +1,20 @@
 
-program {
-	name "rvc"
-	description "The Relaxed VPN Client"
-	version "1.2.4"
-	copyright "Copyright (c) 2017, Ribose Inc"
-	homepage "https://www.ribose.com"
-	license ""
+# NOS configuration
+
+suboption json_flag {
+	switch "--json"
+	type "boolean"
 }
 
 option connect {
 	type "string"
 	switch "connect"
 	desc "connect to a VPN with given name (default:all)"
-	hint "all|connection name"
+	hint "[all|connection name] [--json]"
 	default "all"
 
 	suboptions {
-		option json_flag {
-			switch "--json"
-			type "boolean"
-		}
+		option json_flag
 	}
 }
 
@@ -27,14 +22,11 @@ option disconnect {
 	type "string"
 	switch "disconnect"
 	desc "disconnect VPN with given name (default:all)"
-	hint "all|connection name"
+	args_desc "[all|connection name] [--json]"
 	default "all"
 
 	suboptions {
-		option json_flag {
-			switch "--json"
-			type "boolean"
-		}
+		option json_flag
 	}
 }
 
@@ -42,14 +34,11 @@ option reconnect {
 	type "string"
 	switch "reconnect"
 	desc "reconnect VPN with given name (default:all)"
-	hint "all|connection name"
+	hint "[all|connection name] [--json]"
 	default "all"
 
 	suboptions {
-		option json_flag {
-			switch "--json"
-			type "boolean"
-		}
+		option json_flag
 	}
 }
 
@@ -57,14 +46,11 @@ option status {
 	type "string"
 	switch "status"
 	desc "get status of VPN connection with given name (default:all)"
-	hint "all|connection name"
+	hint "[all|connection name] [--json]"
 	default "all"
 
 	suboptions {
-		option json_flag {
-			switch "--json"
-			type "boolean"
-		}
+		option json_flag
 	}
 }
 
@@ -72,7 +58,7 @@ option edit {
 	type "string"
 	switch "edit"
 	desc "edit VPN connection with given name"
-	hint "connection name"
+	hint "<connection name> <auto-connect|pre-exec-cmd|profile> <value>"
 
 	suboptions {
 		requires true
@@ -80,20 +66,17 @@ option edit {
 
 		option auto-connect {
 			type "string"
-			switch "--auto-connect"
-			hint "yes|no"
+			switch "auto-connect"
 		}
 
 		option pre-exec-cmd {
 			type "string"
-			switch "--pre-exec-cmd"
-			hint "command"
+			switch "pre-exec-cmd"
 		}
 
 		option profile {
 			type "string"
-			switch "--profile"
-			hint "FILE"
+			switch "profile"
 		}
 	}
 }
@@ -102,7 +85,7 @@ option remove {
 	type "string"
 	switch "remove"
 	desc "remove VPN connection (sudo required)"
-	hint "connection name"
+	hint "<connection name> [--force]"
 
 	suboptions {
 		option force_flag {
@@ -116,6 +99,7 @@ option import {
 	type "boolean"
 	switch "import"
 	desc "import VPN connection (sudo required)"
+	hint "<new-from-tblk|new-from-ovpn> <path>"
 
 	suboptions {
 		requires true
@@ -124,13 +108,11 @@ option import {
 		option new_from_tblk {
 			type "string"
 			switch "--new-from-tblk"
-			hint "FILE"
 		}
 
 		option new_from_ovpn {
 			type "string"
 			switch "--new-from-ovpn"
-			hint "FILE"
 		}
 	}
 }
@@ -145,6 +127,7 @@ option dns-override {
 	type "boolean"
 	switch "dns-override"
 	desc "override DNS settings (sudo required)"
+	hint "<enable <DNS serve IP list>|disable|status>"
 
 	suboptions {
 		requires true
@@ -153,7 +136,6 @@ option dns-override {
 		option enable {
 			type "string"
 			switch "--enable"
-			hint "IP list"
 		}
 
 		option disable {
@@ -172,6 +154,7 @@ option script-security {
 	type "boolean"
 	switch "script-security"
 	desc "enable/disable script security"
+	hint "<enable|disable>"
 
 	suboptions {
 		requires true
@@ -190,7 +173,7 @@ option script-security {
 }
 
 option version {
-	type "version"
+	type "boolean"
 	switch "version"
 	desc "print version"
 }
