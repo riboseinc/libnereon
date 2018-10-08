@@ -40,7 +40,7 @@ nereon_ctx_t *nereon_ctx_init(const char *nos_cfg)
 {
 	nereon_ctx_priv_t *ctx;
 
-	ctx = nereon_ctx_priv_init(nos_cfg);
+	ctx = ctx_priv_init(nos_cfg);
 	if (!ctx)
 		return NULL;
 
@@ -53,7 +53,7 @@ nereon_ctx_t *nereon_ctx_init(const char *nos_cfg)
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx)
 {
-	nereon_ctx_priv_finalize((nereon_ctx_priv_t *)ctx);
+	ctx_priv_finalize((nereon_ctx_priv_t *)ctx);
 }
 
 /*
@@ -76,7 +76,16 @@ const char *nereon_get_version_info(void)
 
 int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit)
 {
-	return nereon_ctx_parse_cmdline((nereon_ctx_priv_t *)ctx, argc, argv, require_exit);
+	return ctx_parse_cmdline((nereon_ctx_priv_t *)ctx, argc, argv, require_exit);
+}
+
+/*
+ * print CLI usage message
+ */
+
+void nereon_print_cli_usage(nereon_ctx_t *ctx)
+{
+	ctx_print_usage((nereon_ctx_priv_t *)ctx);
 }
 
 /*
@@ -85,7 +94,7 @@ int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require
 
 const char *nereon_get_errmsg(void)
 {
-	return NULL;
+	return nereon_get_err();
 }
 
 #if 0

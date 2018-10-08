@@ -3,7 +3,11 @@
 
 struct nereon_ctx_priv;
 
+#include <ucl.h>
+
 #include "common.h"
+#include "err.h"
+#include "util.h"
 #include "nos.h"
 #include "cli.h"
 
@@ -13,25 +17,30 @@ struct nereon_ctx_priv;
 
 typedef struct nereon_ctx_priv {
 	nereon_nos_schema_t nos_schema;
-	nereon_cli_option_t root_cli_opt;
 } nereon_ctx_priv_t;
 
 /*
  * initialize libnereon context
  */
 
-nereon_ctx_priv_t *nereon_ctx_priv_init(const char *nos_cfg);
+nereon_ctx_priv_t *ctx_priv_init(const char *nos_cfg);
 
 /*
  * finalize libnereon context
  */
 
-void nereon_ctx_priv_finalize(nereon_ctx_priv_t *ctx);
+void ctx_priv_finalize(nereon_ctx_priv_t *ctx);
 
 /*
  * parse command line
  */
 
-int nereon_ctx_parse_cmdline(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *required_exit);
+int ctx_parse_cmdline(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *required_exit);
+
+/*
+ * print CLI usage
+ */
+
+void ctx_print_usage(nereon_ctx_priv_t *ctx);
 
 #endif /* __NEREON_CTX_H__ */

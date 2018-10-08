@@ -6,7 +6,9 @@ set (
 	nereon.c
 	ctx.c
 	nos.c
+	cli.c
 	util.c
+	err.c
 )
 
 add_library (nereon_single STATIC ${LIBNEREON_SOURCES})

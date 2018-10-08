@@ -31,10 +31,7 @@
 #include <limits.h>
 #include <ucl.h>
 
-#include "err.h"
-#include "util.h"
-
-#include "nereon.h"
+#include "ctx.h"
 
 #if 0
 
@@ -192,24 +189,13 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 	return 0;
 }
 
-#endif
-
-/*
- * add argument to cli option
- */
-
-static void add_arg_to_cli_option(nereon_cli_option_t *cli_opt, const char *arg)
-{
-
-}
-
 /*
  * create new CLI option
  */
 
 static nereon_cli_option_t *new_cli_option(nereon_cli_option_t *root_opt, nereon_nos_option_t *nos_opt)
 {
-	nerelon_cli_option_t *opt;
+	nereon_cli_option_t *opt;
 
 	/* allocate memory for cli option */
 	opt = (nereon_cli_option_t *)malloc(sizeof(nereon_cli_option_t));
@@ -272,11 +258,13 @@ void nereon_cli_free(nereon_cli_option_t *root_opt)
 	free_cli_option(root_opt->next);
 }
 
+#endif
+
 /*
  * parse command line arguments based on NOS schema
  */
 
-int nereon_cli_parse(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *require_exit)
+int cli_parse_argv(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *require_exit)
 {
 	nereon_nos_schema_t *nos_schema = &ctx->nos_schema;
 	nereon_nos_option_t *nos_opt = NULL;
@@ -284,45 +272,36 @@ int nereon_cli_parse(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *requir
 	int i = 1, ret = 0;
 
 	/* set command line options */
-	while (ret == 0) {
-		nereon_cli_option_t *cli_opt;
+	while (ret == 0 && i < argc) {
+		DEBUG_PRINT("CLI: Try to get NOS option '%s' in root\n", argv[i]);
 
 		/* get NOS option by switch */
+		nos_opt = nereon_get_nos_by_sw(&nos_schema->root_opt, argv[i]);
 		if (!nos_opt) {
-			nos_opt = nereon_get_nos_by_sw(nos_schema, argv[i]);
-			if (!nos_opt) {
-				DEBUG_PRINT("CLI: Unknown option '%s'\n", argv[i]);
-				ret = -1;
-				break;
-			}
-		}
+			DEBUG_PRINT("CLI: Unknown option '%s'\n", argv[i]);
 
-		/* create new cli option */
-		cli_opt = new_cli_option(&ctx->root_cli_opt, nos_opt);
-		if (!cli_opt) {
+			nereon_set_err("Unknown option '%s'", argv[i]);
 			ret = -1;
 			break;
 		}
 
-		/* check if followed options are switch or arguments */
-		do {
-			if (++i == argc)
-				break;
+		/* set NOS option data and sub options */
+		i++;
+		ret = nereon_set_nos_option(nos_opt, argc, argv, &i, require_exit);
+		if (ret == -1 || *require_exit == true)
+			return ret;
 
-			nos_opt = nereon_get_nos_by_sw(nos_schema, argv[i]);
-			if (nos_opt)
-				break;
-
-			if (add_arg_to_cli_option(cli_opt, argv[i]) != 0) {
-				DEBUG_PRINT("CLI: Out of memory!\n");
-				ret = -1;
-				break;
-			}
-		} while (true);
+		i++;
 	}
 
-	if (ret != 0)
-		nereon_cli_free(&ctx->root_cli_opt);
-
 	return ret;
+}
+
+/*
+ * print CLI usage message
+ */
+
+void cli_print_usage(struct nereon_ctx_priv *ctx)
+{
+
 }

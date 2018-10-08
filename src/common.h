@@ -11,7 +11,7 @@
 #define NR_MAX_HINT                128
 #define NR_MAX_ENV_NAME            64
 #define NR_MAX_KEY_NAME            128
-#define NR_MAX_ERR_MSG             1024
+#define NR_MAX_ERR_MSG             2048
 #define NR_MAX_VERSION             32
 #define NR_MAX_COPYRIGHT           128
 #define NR_MAX_URL                 1024
@@ -21,12 +21,17 @@
  * libnereon configuration data
  */
 
-union nereon_config_data {
+typedef union nereon_opt_data {
 	int i;
 	char *str;
 	bool b;
 	double d;
-};
+
+	struct nereon_opt_array {
+		char **items;
+		int items_count;
+	} arr;
+} nereon_opt_data_t;
 
 /*
  * libnereon configuration types

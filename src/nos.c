@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <ucl.h>
 
 #include "err.h"
@@ -87,6 +88,8 @@ static void print_nos_option(nereon_nos_option_t *nos_opt, int level)
 		if (strlen(nos_opt->default_val) > 0)
 			DEBUG_PRINT("%s  default_val: %s\n", shift, nos_opt->default_val);
 
+		DEBUG_PRINT("%s  parent: %s\n", shift, strlen(nos_opt->parent_opt->name) ? nos_opt->parent_opt->name : "root");
+
 		free(shift);
 	}
 
@@ -125,14 +128,21 @@ static void print_nos_schema(nereon_nos_schema_t *nos_schema)
 
 static void free_nos_option(nereon_nos_option_t *nos_opt)
 {
+	/* free sub options */
 	if (nos_opt->sub_opts.opts_count > 0) {
 		int i;
 
 		for (i = 0; i < nos_opt->sub_opts.opts_count; i++)
 			free_nos_option(nos_opt->sub_opts.opts[i]);
+
 		free(nos_opt->sub_opts.opts);
 	}
 
+	/* if option type is array, then free memory */
+	if (nos_opt->type == NEREON_TYPE_ARRAY && nos_opt->data.arr.items)
+		free(nos_opt->data.arr.items);
+
+	/* free self */
 	free(nos_opt);
 }
 
@@ -142,6 +152,9 @@ static void free_nos_option(nereon_nos_option_t *nos_opt)
 
 static void add_nos_option(nereon_nos_option_t *parent_opt, nereon_nos_option_t *nos_opt)
 {
+	DEBUG_PRINT("Adding sub option '%s' to option '%s'\n", nos_opt->name,
+			strlen(parent_opt->name) > 0 ? parent_opt->name : "root");
+
 	/* allocate memory for new NOS option */
 	if (parent_opt->sub_opts.opts_count == 0)
 		parent_opt->sub_opts.opts = (nereon_nos_option_t **)malloc(sizeof(nereon_nos_option_t *));
@@ -155,6 +168,7 @@ static void add_nos_option(nereon_nos_option_t *parent_opt, nereon_nos_option_t 
 	}
 
 	parent_opt->sub_opts.opts[parent_opt->sub_opts.opts_count++] = nos_opt;
+	nos_opt->parent_opt = parent_opt;
 }
 
 /*
@@ -271,29 +285,32 @@ static int parse_nos_sub_options(const ucl_object_t *obj, nereon_nos_option_t *n
 
 static int parse_nos_option(const ucl_object_t *obj, nereon_nos_option_t **nos_opt)
 {
-	nereon_nos_option_t opt;
+	nereon_nos_option_t *opt;
 
 	DEBUG_PRINT("NOS: Parsing NOS option '%s'\n", obj->key);
 
 	/* init NOS option */
-	memset(&opt, 0, sizeof(nereon_nos_option_t));
-	strcpy_s(opt.name, obj->key, sizeof(opt.name));
-
-	/* parse option fields */
-	if (parse_nos_option_fields(obj, &opt) != 0)
-		return -1;
-
-	/* parse sub options */
-	if (parse_nos_sub_options(obj, &opt) != 0)
-		return -1;
-
-	/* allocate memory for new NOS option */
-	*nos_opt = (nereon_nos_option_t *)malloc(sizeof(nereon_nos_option_t));
-	if (*nos_opt == NULL) {
+	opt = (nereon_nos_option_t *)malloc(sizeof(nereon_nos_option_t));
+	if (!opt) {
 		DEBUG_PRINT("NOS: Out of memory!\n");
 		return -1;
 	}
-	memcpy(*nos_opt, &opt, sizeof(nereon_nos_option_t));
+	memset(opt, 0, sizeof(nereon_nos_option_t));
+	strcpy_s(opt->name, obj->key, sizeof(opt->name));
+
+	/* parse option fields */
+	if (parse_nos_option_fields(obj, opt) != 0) {
+		free_nos_option(opt);
+		return -1;
+	}
+
+	/* parse sub options */
+	if (parse_nos_sub_options(obj, opt) != 0) {
+		free_nos_option(opt);
+		return -1;
+	}
+
+	*nos_opt = opt;
 
 	return 0;
 }
@@ -406,6 +423,11 @@ int nereon_parse_nos_schema(const char *nos_cfg, nereon_nos_schema_t *nos_schema
 
 	/* parse NOS info from UCL object */
 	ret = parse_nos_schema(obj, nos_schema);
+	if (ret == 0) {
+#ifdef NEREON_DEBUG
+		print_nos_schema(nos_schema);
+#endif
+	}
 
 end:
 	if (parser)
@@ -433,21 +455,223 @@ void nereon_free_nos_schema(nereon_nos_schema_t *nos_schema)
  * get NOS option by switch
  */
 
-nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_schema_t *nos_schema, const char *sw)
+nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_option_t *parent_opt, const char *sw)
 {
+	int i = 0;
+
+	DEBUG_PRINT("NOS: Getting NOS option for switch '%s' in option '%s'\n", sw,
+			strlen(parent_opt->name) ? parent_opt->name : "root");
+
+	for (i = 0; i < parent_opt->sub_opts.opts_count; i++) {
+		nereon_nos_option_t *p = parent_opt->sub_opts.opts[i];
+
+		if (strcmp(p->sw, sw) == 0)
+			return p;
+	}
+
+	DEBUG_PRINT("NOS: Failed to get NOS option for switch '%s'\n", sw);
+
 	return NULL;
 }
 
 /*
- * check if NOS option requires arguments
+ * set NOS option
  */
 
-bool nereon_nos_requires_args(nereon_nos_option_t *nos_opt)
+static int set_nos_option(nereon_nos_option_t *nos_opt, void *opt_data, int count)
 {
-	if (nos_opt->type == NEREON_TYPE_BOOL ||
-		nos_opt->type == NEREON_TYPE_HELPER ||
-		nos_opt->type == NEREON_TYPE_VERSION)
-		return false;
+	DEBUG_PRINT("Setting NOS option '%s'\n", nos_opt->name);
 
-	return true;
+	switch (nos_opt->type) {
+	case NEREON_TYPE_BOOL:
+	case NEREON_TYPE_VERSION:
+	case NEREON_TYPE_HELPER:
+		{
+			nos_opt->data.b = true;
+			DEBUG_PRINT("Setting true for option '%s'\n", nos_opt->name);
+		}
+		break;
+
+	case NEREON_TYPE_INT:
+		{
+			nos_opt->data.i = (int)strtol((char *)opt_data, NULL, 10);
+			if (errno == ERANGE) {
+				DEBUG_PRINT("Invalid integer value '%s'\n", (char *)opt_data);
+
+				nereon_set_err("Invalid integer value '%s' for option '%s'", (char *)opt_data, nos_opt->name);
+				return -1;
+			}
+
+			DEBUG_PRINT("Setting integer value '%s' for option '%s'\n", (char *)opt_data, nos_opt->name);
+		}
+		break;
+
+	case NEREON_TYPE_FLOAT:
+		{
+			nos_opt->data.d = strtod((char *)opt_data, NULL);
+			if (errno == ERANGE) {
+				DEBUG_PRINT("Invalid float value '%s'\n", (char *)opt_data);
+
+				nereon_set_err("Invalid float value '%s' for option '%s'", (char *)opt_data, nos_opt->name);
+				return -1;
+			}
+
+			DEBUG_PRINT("Setting float value '%s' for option '%s'\n", (char *)opt_data, nos_opt->name);
+		}
+		break;
+
+	case NEREON_TYPE_STRING:
+	case NEREON_TYPE_CONFIG:
+		{
+			DEBUG_PRINT("Setting string value '%s' for option '%s'\n", (char *)opt_data, nos_opt->name);
+			nos_opt->data.str = opt_data;
+		}
+		break;
+
+	case NEREON_TYPE_ARRAY:
+		{
+			DEBUG_PRINT("Setting array value(count:%d) for option '%s'\n", count, nos_opt->name);
+
+			nos_opt->data.arr.items = (char **)opt_data;
+			nos_opt->data.arr.items_count = count;
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+/*
+ * set NOS option
+ */
+
+int nereon_set_nos_option(nereon_nos_option_t *nos_opt, int argc, char **argv, int *index, bool *require_exit)
+{
+	nereon_nos_option_t *p = NULL;
+	int i = *index;
+
+	char **args = NULL;
+	int args_count = 0;
+
+	bool next_is_subopt = false;
+
+	int ret = 0;
+
+	DEBUG_PRINT("Try to set NOS option '%s'(index:%d)\n", nos_opt->name, *index);
+
+	/* check if next option is NOS option in same level, sub option or argument */
+	while (i < argc) {
+		p = nereon_get_nos_by_sw(nos_opt->parent_opt, argv[i]);
+		if (!p) {
+			p = nereon_get_nos_by_sw(nos_opt, argv[i]);
+			if (p) {
+				DEBUG_PRINT("Found sub option '%s' for NOS option '%s'\n", p->name, nos_opt->name);
+				next_is_subopt = true;
+			}
+		}
+
+		if (!p) {
+			args = realloc(args, (args_count + 1) * sizeof(char *));
+			if (!args) {
+				DEBUG_PRINT("NOS: Out of memory\n");
+
+				nereon_set_err("Out of memory\n");
+				return -1;
+			}
+			args[args_count++] = argv[i];
+		} else
+			break;
+
+		i++;
+	}
+
+	/* check if NOS option requires arguments */
+	switch (nos_opt->type) {
+	case NEREON_TYPE_BOOL:
+		{
+			if (args_count > 0) {
+				DEBUG_PRINT("NOS: Unknown parameter '%s' for option '%s'\n", args[0], nos_opt->sw);
+
+				nereon_set_err("Unknown parameter '%s' for option '%s'", args[0], nos_opt->sw);
+				ret = -1;
+			} else
+				ret = set_nos_option(nos_opt, NULL, -1);
+		}
+		break;
+
+	case NEREON_TYPE_HELPER:
+	case NEREON_TYPE_VERSION:
+		{
+			ret = set_nos_option(nos_opt, NULL, -1);
+			*require_exit = 1;
+		}
+		break;
+
+	case NEREON_TYPE_INT:
+	case NEREON_TYPE_STRING:
+	case NEREON_TYPE_CONFIG:
+	case NEREON_TYPE_FLOAT:
+		{
+			if (args_count == 0) {
+				if (strlen(nos_opt->default_val) > 0)
+					ret = set_nos_option(nos_opt, nos_opt->default_val, -1);
+				else {
+					DEBUG_PRINT("NOS: Missing parameter for option '%s'\n", nos_opt->sw);
+
+					nereon_set_err("Missing parameter for option '%s'", nos_opt->sw);
+					ret = -1;
+				}
+			} else if (args_count != 1) {
+				DEBUG_PRINT("NOS: Unknown parameter '%s' for option '%s'\n", args[1], nos_opt->sw);
+
+				nereon_set_err("Unknown parameter '%s' for option '%s'", nos_opt->sw);
+				ret = -1;
+			} else
+				ret = set_nos_option(nos_opt, argv[i-1], -1);
+
+			free(args);
+		}
+		break;
+
+	case NEREON_TYPE_ARRAY:
+		{
+			if (args_count == 0) {
+				DEBUG_PRINT("NOS: Missing parameter for option '%s'\n", nos_opt->sw);
+
+				nereon_set_err("Missing parameter for option '%s'", nos_opt->sw);
+				ret = -1;
+			} else
+				ret = set_nos_option(nos_opt, args, args_count);
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	/* check parsing error */
+	if (ret == -1 || *require_exit == 1)
+		return ret;
+
+	/* if next is NOS option in same level, then return */
+	if (p && !next_is_subopt)
+		return 0;
+
+	/* if there is no sub options, then check whether sub options are required */
+	if (!p && nos_opt->sub_opts.requires) {
+		DEBUG_PRINT("NOS: Missing sub options for option '%s'\n", nos_opt->sw);
+
+		nereon_set_err("Missing sub options for option '%s'", nos_opt->sw);
+		return -1;
+	}
+
+	/* set NOS sub options recursively */
+	*index = i;
+	if (p)
+		ret = nereon_set_nos_option(p, argc, argv, index, require_exit);
+
+	return ret;
 }

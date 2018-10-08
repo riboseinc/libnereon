@@ -8,7 +8,7 @@
  * initialize libnereon context
  */
 
-nereon_ctx_priv_t *nereon_ctx_priv_init(const char *nos_cfg)
+nereon_ctx_priv_t *ctx_priv_init(const char *nos_cfg)
 {
 	nereon_ctx_priv_t *ctx;
 
@@ -32,7 +32,7 @@ nereon_ctx_priv_t *nereon_ctx_priv_init(const char *nos_cfg)
  * finalize libnereon context
  */
 
-void nereon_ctx_priv_finalize(nereon_ctx_priv_t *ctx)
+void ctx_priv_finalize(nereon_ctx_priv_t *ctx)
 {
 	/* free NOS schema */
 	nereon_free_nos_schema(&ctx->nos_schema);
@@ -45,7 +45,20 @@ void nereon_ctx_priv_finalize(nereon_ctx_priv_t *ctx)
  * parse command line
  */
 
-int nereon_ctx_parse_cmdline(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *required_exit)
+int ctx_parse_cmdline(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *required_exit)
 {
-	return nereon_cli_parse(ctx, argc, argv, required_exit);
+	return cli_parse_argv(ctx, argc, argv, required_exit);
+}
+
+/*
+ * print CLI usage
+ */
+
+/*
+ * print CLI usage
+ */
+
+void ctx_print_usage(nereon_ctx_priv_t *ctx)
+{
+	cli_print_usage(ctx);
 }
