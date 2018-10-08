@@ -47,7 +47,10 @@ typedef struct nereon_nos_option {
 
 	char default_val[NR_MAX_DEFAULT_VAL];
 
+	nereon_opt_data_t data;
+
 	nereon_nos_subopts_t sub_opts;
+	struct nereon_nos_option *parent_opt;
 } nereon_nos_option_t;
 
 /*
@@ -75,18 +78,12 @@ void nereon_free_nos_schema(nereon_nos_schema_t *nos_schema);
  * get NOS option by switch
  */
 
-nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_schema_t *nos_schema, const char *sw);
+nereon_nos_option_t *nereon_get_nos_by_sw(nereon_nos_option_t *parent_opt, const char *sw);
 
 /*
- * check if NOS option requires arguments
+ * set NOS option
  */
 
-bool nereon_nos_requires_args(nereon_nos_option_t *nos_opt);
-
-/*
- * check if NOS option requires sub options
- */
-
-bool nereon_nos_requires_suboptions(nereon_nos_option_t *nos_opt);
+int nereon_set_nos_option(nereon_nos_option_t *nos_opt, int argc, char **argv, int *index, bool *require_exit);
 
 #endif /* __NEREON_NOS_H__ */

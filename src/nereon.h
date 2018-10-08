@@ -3,11 +3,6 @@
 
 #include <stdbool.h>
 
-#include "common.h"
-#include "nos.h"
-#include "cli.h"
-#include "noc.h"
-
 #define STRINGIZE(x)               #x
 #define STRINGIZE_VALUE_OF(x)      STRINGIZE(x)
 
@@ -24,6 +19,18 @@ nereon_ctx_t *nereon_ctx_init(const char *nos_cfg);
  */
 
 void nereon_ctx_finalize(nereon_ctx_t *ctx);
+
+/*
+ * parse command line
+ */
+
+int nereon_parse_cmdline(nereon_ctx_t *ctx, int argc, char **argv, bool *require_exit);
+
+/*
+ * print CLI usage
+ */
+
+void nereon_print_cli_usage(nereon_ctx_t *ctx);
 
 /*
  * get libnereon error message
