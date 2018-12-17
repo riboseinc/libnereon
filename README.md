@@ -6,6 +6,7 @@
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
 - [Introduction](#introduction)
+- [How to build](#how-to-build)
 - [NOS and NOC syntax](#nos-and-noc-syntax)
 - [libnereon API functions](#libnereon-api-functions)
 
@@ -17,6 +18,28 @@ This library parses the following configurations by [HCL](https://github.com/vst
  * The command-line arguments.
  * The environment variables.
  * The configuration files.
+
+## How To Build
+
+To build `libnereon` on Ubuntu:
+
+```
+sudo apt install automake libtool cmake
+mkdir build
+cd build
+cmake ..
+make
+```
+
+To build `libnereon` on MacOS:
+
+```
+brew install automake libtool cmake pkg-config
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ## NOS and NOC syntax
 
