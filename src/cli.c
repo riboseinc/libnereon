@@ -31,10 +31,9 @@
 #include <limits.h>
 #include <ucl.h>
 
-#include "err.h"
-#include "util.h"
+#include "ctx.h"
 
-#include "nereon.h"
+#if 0
 
 /*
  * show helper message
@@ -188,4 +187,121 @@ int nereon_cli_parse(struct nereon_nos_option *nos_opts, int nos_opts_count, int
 	}
 
 	return 0;
+}
+
+/*
+ * create new CLI option
+ */
+
+static nereon_cli_option_t *new_cli_option(nereon_cli_option_t *root_opt, nereon_nos_option_t *nos_opt)
+{
+	nereon_cli_option_t *opt;
+
+	/* allocate memory for cli option */
+	opt = (nereon_cli_option_t *)malloc(sizeof(nereon_cli_option_t));
+	if (!opt)
+		return NULL;
+	memset(opt, 0, sizeof(nereon_cli_option_t));
+
+	opt->nos_opt = nos_opt;
+
+	/* add cli option to root */
+	if (!root_opt->next)
+		root_opt->next = opt;
+	else {
+		nereon_cli_option_t *p = root_opt->next;
+
+		while (p->next) {
+			p = p->next;
+		}
+		p->next = opt;
+	}
+
+	return opt;
+}
+
+/*
+ * add argument to cli option
+ */
+
+static int add_arg_to_cli_option(nereon_cli_option_t *cli_opt, const char *arg)
+{
+	cli_opt->args = realloc(cli_opt->args, (cli_opt->args_count + 1) * sizeof(char *));
+	if (!cli_opt->args)
+		return -1;
+	cli_opt->args[cli_opt->args_count++] = arg;
+
+	return 0;
+}
+
+/*
+ * free cli option
+ */
+
+static void free_cli_option(nereon_cli_option_t *opt)
+{
+	if (opt->next)
+		free_cli_option(opt->next);
+
+	if (opt->args)
+		free(opt->args);
+
+	free(opt);
+}
+
+/*
+ * free cli options
+ */
+
+void nereon_cli_free(nereon_cli_option_t *root_opt)
+{
+	free_cli_option(root_opt->next);
+}
+
+#endif
+
+/*
+ * parse command line arguments based on NOS schema
+ */
+
+int cli_parse_argv(nereon_ctx_priv_t *ctx, int argc, char **argv, bool *require_exit)
+{
+	nereon_nos_schema_t *nos_schema = &ctx->nos_schema;
+	nereon_nos_option_t *nos_opt = NULL;
+
+	int i = 1, ret = 0;
+
+	/* set command line options */
+	while (ret == 0 && i < argc) {
+		DEBUG_PRINT("CLI: Try to get NOS option '%s' in root\n", argv[i]);
+
+		/* get NOS option by switch */
+		nos_opt = nereon_get_nos_by_sw(&nos_schema->root_opt, argv[i]);
+		if (!nos_opt) {
+			DEBUG_PRINT("CLI: Unknown option '%s'\n", argv[i]);
+
+			nereon_set_err("Unknown option '%s'", argv[i]);
+			ret = -1;
+			break;
+		}
+
+		/* set NOS option data and sub options */
+		i++;
+		ret = nereon_set_nos_option(nos_opt, argc, argv, &i, require_exit);
+		if (ret == -1 || *require_exit == true)
+			return ret;
+
+		i++;
+	}
+
+	return ret;
+}
+
+/*
+ * print CLI usage message
+ */
+
+void cli_print_usage(struct nereon_ctx_priv *ctx)
+{
+
 }

@@ -28,11 +28,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "common.h"
-#include "util.h"
-#include "err.h"
+#include "ctx.h"
 
-static char err_msg[CFG_MAX_ERR_MSG];
+static char err_msg[NR_MAX_ERR_MSG];
 
 /*
  * set error string
@@ -42,24 +40,9 @@ void nereon_set_err(const char *err_fmt, ...)
 {
 	va_list va_args;
 
-	char *msg;
-	size_t msg_size;
-
 	va_start(va_args, err_fmt);
-	msg_size = vsnprintf(NULL, 0, err_fmt, va_args);
+	vsnprintf(err_msg, sizeof(err_msg), err_fmt, va_args);
 	va_end(va_args);
-
-	msg = (char *) malloc(msg_size + 1);
-	if (!msg)
-		return;
-
-	va_start(va_args, err_fmt);
-	vsnprintf(msg, msg_size + 1, err_fmt, va_args);
-	va_end(va_args);
-
-	strcpy_s(err_msg, msg, sizeof(err_msg));
-
-	free(msg);
 }
 
 /*

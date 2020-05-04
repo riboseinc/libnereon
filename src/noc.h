@@ -6,8 +6,8 @@
  */
 
 typedef struct nereon_noc_option {
-	char key[CFG_MAX_KEY_NAME];
-	enum NEREON_CONFIG_TYPE type;
+	char key[NR_MAX_KEY_NAME];
+	enum NEREON_OPT_TYPE type;
 
 	struct nereon_noc_option *childs;
 	struct nereon_noc_option *next;
