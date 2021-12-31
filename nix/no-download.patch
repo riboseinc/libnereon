@@ -1,0 +1,12 @@
+diff --git i/CMakeLists.txt w/CMakeLists.txt
+index ea55097..02ab212 100644
+--- i/CMakeLists.txt
++++ w/CMakeLists.txt
+@@ -31,6 +31,7 @@ include (ExternalProject)
+ ExternalProject_Add (
+ 	libucl
+ 	URL https://github.com/vstakhov/libucl/archive/0.8.1.tar.gz
++	DOWNLOAD_COMMAND ""
+ 	UPDATE_COMMAND ""
+ 	PATCH_COMMAND ""
+ 	BINARY_DIR "${CMAKE_BINARY_DIR}/libucl"

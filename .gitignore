@@ -1,5 +1,8 @@
 build/
 
+# Nix
+result
+
 # Created by https://www.toptal.com/developers/gitignore/api/c++,cmake,linux,macos,windows,vim,emacs,sublimetext,textmate,visualstudiocode,autotools
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,cmake,linux,macos,windows,vim,emacs,sublimetext,textmate,visualstudiocode,autotools
 

@@ -2,6 +2,7 @@
 :doctype: book
 
 image::https://travis-ci.org/riboseinc/libnereon.svg?branch=master[Build Status,link=https://travis-ci.org/riboseinc/libnereon]
+image::https://github.com/riboseinc/libnereon/actions/workflows/nix.yml/badge.svg[nix, link=https://github.com/riboseinc/libnereon/actions/workflows/nix.yml]
 
 *Table of Contents*  _generated with http://doctoc.herokuapp.com/[DocToc]_
 
