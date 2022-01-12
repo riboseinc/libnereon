@@ -1,4 +1,4 @@
-name: MSYS
+name: windows-msys
 
 on:
   push:
