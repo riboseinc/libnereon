@@ -1,0 +1,80 @@
+name: MSYS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'release/**'
+    paths-ignore:
+      - 'docs/**'
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '.gitignore'
+      - '.gitattributes'
+      - '.editorconfig'
+      - '.cirrus.yml'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/msys.yml'
+      - 'ci/before_install/*'
+      - 'ci/checkpatch*'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '.gitignore'
+      - '.gitattributes'
+      - '.editorconfig'
+      - '.cirrus.yml'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/msys.yml'
+      - 'ci/before_install/*'
+      - 'ci/checkpatch*'
+
+env:
+  ACLOCAL_PATH: "/d/a/_temp/msys64/usr/share/aclocal/"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: msys2/setup-msys2@v2
+        with:
+          path-type: strict
+          update: false
+          install: >-
+            autoconf
+            automake
+            cmake       
+            git
+            gcc
+            libtool     
+            make
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cmake -S . -B build -G "Unix Makefiles"
+
+      - name: Build
+        run: cmake --build build 
+
+      - name: Test
+        run: cmake --build build --target test
+
+      - name: Install
+        run: cmake --build build --target install

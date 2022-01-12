@@ -25,18 +25,18 @@ set (
 )
 
 add_custom_target(tmpdir
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/tmp
-        COMMENT "Creating working directory at ${CMAKE_BINARY_DIR}/src/tmp"
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/tmp
+    COMMENT "Creating working directory at ${CMAKE_BINARY_DIR}/src/tmp"
 )
 
 add_custom_target(libnereon
-	COMMAND ar -x ${CMAKE_BINARY_DIR}/src/libnereon_single.a
-	COMMAND ar -x ${LIBUCL}
-	COMMAND ar -rcs ${LIBNEREON_LIBRARY} *.o
-	COMMENT "Merging wih libucl.a library"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src/tmp
-        DEPENDS nereon_single tmpdir
-        BYPRODUCTS ${LIBNEREON_LIBRARY}
+    COMMAND ar -x ${CMAKE_BINARY_DIR}/src/libnereon_single.a
+    COMMAND ar -x ${LIBUCL}
+    COMMAND ar -rcs ${LIBNEREON_LIBRARY} *.o*
+    COMMENT "Merging wih libucl.a library"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src/tmp
+    DEPENDS nereon_single tmpdir
+    BYPRODUCTS ${LIBNEREON_LIBRARY}
 )
 
 install (FILES ${LIBNEREON_LIBRARY} DESTINATION lib)
