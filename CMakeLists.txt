@@ -1,6 +1,7 @@
 
 # libnereon project settings
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.16)
+# cmake 2.8.16 due to deprecation of everything below
 project (libnereon)
 set (CMAKE_BUILD_TYPE Release)
 
