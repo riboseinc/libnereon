@@ -34,6 +34,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <ctype.h>
+
 
 #include "common.h"
 #include "nereon.h"
@@ -53,7 +55,7 @@ static size_t read_file_contents(const char *fpath, char **buf)
 		return 0;
 	}
 
-	fp = fopen(fpath, "r");
+	fp = fopen(fpath, "rb");
 	if (!fp) {
 		fprintf(stderr, "Could not open file '%s' for reading\n", fpath);
 		return 0;

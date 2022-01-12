@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	/* parse command line */
 	ret = nereon_parse_cmdline(ctx, argc, argv, &require_exit);
 	if (ret == 0) {
-		
+
 	}
 
 #if 0
