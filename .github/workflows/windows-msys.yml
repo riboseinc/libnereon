@@ -16,7 +16,7 @@ on:
       - '.editorconfig'
       - '.cirrus.yml'
       - '.github/workflows/*.yml'
-      - '!.github/workflows/msys.yml'
+      - '!.github/workflows/windows-msys.yml'
       - 'ci/before_install/*'
       - 'ci/checkpatch*'
   pull_request:
@@ -30,7 +30,7 @@ on:
       - '.editorconfig'
       - '.cirrus.yml'
       - '.github/workflows/*.yml'
-      - '!.github/workflows/msys.yml'
+      - '!.github/workflows/windows-msys.yml'
       - 'ci/before_install/*'
       - 'ci/checkpatch*'
 
