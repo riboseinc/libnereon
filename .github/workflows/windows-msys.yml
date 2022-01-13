@@ -59,10 +59,10 @@ jobs:
           install: >-
             autoconf
             automake
-            cmake       
+            cmake
             git
             gcc
-            libtool     
+            libtool
             make
 
       - name: Configure
@@ -71,7 +71,7 @@ jobs:
           cmake -S . -B build -G "Unix Makefiles"
 
       - name: Build
-        run: cmake --build build 
+        run: cmake --build build
 
       - name: Test
         run: cmake --build build --target test
