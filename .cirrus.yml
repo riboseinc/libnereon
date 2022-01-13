@@ -1,0 +1,29 @@
+global_task_template: &GLOBAL_TASK_TEMPLATE
+  only_if: $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH == 'main' || $CIRRUS_BRANCH =~ 'release/.*' || $CIRRUS_PR != ''
+  skip: "!changesInclude('.cirrus.yml') && changesIncludeOnly('*.sh', '.*', '_*', 'Brewfile', 'doc/**', '**.adoc', '**.md', '**.nix', 'flake.lock', '.github/**') || $CIRRUS_CHANGE_MESSAGE =~ '.*skip ci.*'"
+  setup_environment_script: |
+    # Update all packages to avoid "version FBSD_1.6 not found" error
+    # See: https://forums.freebsd.org/threads/lib-libc-so-7-version-fbsd_1-6-required-by-usr-local-lib-libepoll-shim-so-0-not-found.81021/
+    pkg update -f
+    pkg upgrade -f -y
+    # Use bash for the CI scripts
+    pkg install -y devel/readline bash cmake
+  configure_script:
+    - mkdir build
+    - cmake -S . -B build -G "Unix Makefiles"
+  build_script:
+    - cmake --build build
+  test_script:
+    - cmake --build build --target test
+  install_script:
+    - cmake --build build --target install
+
+freebsd-12-3-task:
+  << : *GLOBAL_TASK_TEMPLATE
+  freebsd_instance:
+    image: freebsd-12-3-release-amd64
+
+freebsd-13-task:
+  << : *GLOBAL_TASK_TEMPLATE
+  freebsd_instance:
+    image: freebsd-13-0-release-amd64
