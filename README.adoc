@@ -43,6 +43,16 @@ cmake ..
 make
 ----
 
+To build `libnereon` on Windows using MSYS2 environment:
+
+----
+pacman -S --needed autoconf automake cmake gcc libtool make
+mkdir build
+cd build
+cmake .. -G "Unix Makefiles"
+make
+----
+
 == NOS and NOC syntax
 
 `libnereon` uses NOS and NOC configurations based on HCL syntax.
