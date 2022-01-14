@@ -7,7 +7,7 @@ global_task_template: &GLOBAL_TASK_TEMPLATE
     pkg update -f
     pkg upgrade -f -y
     # Use bash for the CI scripts
-    pkg install -y devel/readline bash cmake
+    pkg install -y devel/readline bash cmake autoconf automake libtool devel/pkgconf
   configure_script:
     - mkdir build
     - cmake -S . -B build -G "Unix Makefiles"
