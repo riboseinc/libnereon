@@ -1,0 +1,70 @@
+name: ubuntu
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'release/**'
+    paths-ignore:
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '*.sh'
+      - '.*'
+      - 'Brewfile'
+      - '_*'
+      - 'doc/**'
+      - 'flake.lock'
+      - 'nix/**'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/ubuntu.yml'
+  pull_request:
+    paths-ignore:
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '*.sh'
+      - '.*'
+      - 'Brewfile'
+      - '_*'
+      - 'doc/**'
+      - 'flake.lock'
+      - 'nix/**'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/ubuntu.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install prerequisites
+        run: sudo apt install -y automake libtool cmake
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: |
+          cd build
+          make
+
+      - name: Test
+        run: |
+          cd build
+          make test
+
+      - name: Install
+        run: |
+          cd build
+          sudo make install
