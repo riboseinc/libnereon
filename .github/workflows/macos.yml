@@ -1,0 +1,65 @@
+name: macos
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'release/**'
+    paths-ignore:
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '*.sh'
+      - '.*'
+      - '_*'
+      - 'doc/**'
+      - 'flake.lock'
+      - 'nix/**'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/macos.yml'
+  pull_request:
+    paths-ignore:
+      - '**.adoc'
+      - '**.md'
+      - '**.nix'
+      - '*.sh'
+      - '.*'
+      - '_*'
+      - 'doc/**'
+      - 'flake.lock'
+      - 'nix/**'
+      - '.github/workflows/*.yml'
+      - '!.github/workflows/macos.yml'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-10.15, macos-11.0]
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install prerequisites
+        run: |
+          brew update-reset
+          brew bundle
+
+      - name: Configure
+        run: |
+          mkdir build
+          cmake -S . -B build -G "Unix Makefiles"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cmake --build build --target test
+
+      - name: Install
+        run: cmake --build build --target install

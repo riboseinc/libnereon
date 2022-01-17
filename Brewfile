@@ -1,0 +1,6 @@
+brew "make"
+brew "cmake"
+brew "autoconf"
+brew "automake"
+brew "libtool"
+brew "pkg-config"
